@@ -1,0 +1,12 @@
+@import "@knime/styles/css";
+
+html {
+  background: var(--knime-porcelain);
+}
+
+body {
+  color: var(--knime-masala);
+  background: var(--knime-porcelain);
+  overflow-anchor: none;
+  font-family: var(--theme-text-normal-font-family, "Roboto, sans-serif");
+}

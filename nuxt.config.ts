@@ -1,6 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const css = ["./public/css/index.css"];
+
 export default defineNuxtConfig({
-  compatibilityDate: '2025-05-15',
+  css,
+  compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
-  modules: ['@nuxt/eslint']
-})
+  modules: ["@nuxt/eslint"],
+});
