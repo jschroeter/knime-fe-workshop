@@ -6,4 +6,11 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
   modules: ["@nuxt/eslint"],
+  runtimeConfig: {
+    knimeServiceUser: "",
+    knimeServicePassword: "",
+    public: {
+      // Keys within public, will be also exposed to the client-side
+    },
+  },
 });

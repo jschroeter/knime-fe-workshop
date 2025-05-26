@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { defineProps, onMounted, useTemplateRef } from "vue";
 import isWhiteSpace from "../utils/isWhiteSpace";
 import { Button, Label, InputField } from "@knime/components";
-import LetterContainer from "./LetterContainer.vue";
+import party from "party-js";
 
 const props = defineProps<{
   name: string;
@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const letterStateMap = ref(new Map<string, "hidden" | "revealed">());
 const dialogRef = ref<HTMLDialogElement | null>(null);
+const nodeNameRef = useTemplateRef("nodeName");
 const playerGuess = ref("");
 
 const letterAndState = computed(() => {
@@ -81,6 +82,10 @@ const onDialogSubmit = () => {
 
   if (answer === expected) {
     revealAll();
+    party.confetti(nodeNameRef.value, {
+      count: party.variation.range(20, 40),
+      size: party.variation.range(0.8, 1.2),
+    });
   } else {
     startRevealInterval();
   }
@@ -95,10 +100,16 @@ const isSolved = computed(() => {
   );
 });
 
-onMounted(() => {
-  initializeLetterStateMap();
-  startRevealInterval();
-});
+watch(
+  () => props.name,
+  () => {
+    initializeLetterStateMap();
+    onMounted(() => {
+      startRevealInterval();
+    });
+  },
+  { immediate: true }
+);
 
 onUnmounted(() => {
   stopRevealInterval();
@@ -106,7 +117,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="node-name">
+  <div ref="nodeName" class="node-name">
     <LetterContainer
       v-for="{ index, letter, state } in letterAndState"
       :key="`${index}-${letter}`"

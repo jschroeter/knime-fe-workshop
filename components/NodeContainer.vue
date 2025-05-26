@@ -1,62 +1,21 @@
 <script setup lang="ts">
-import { toRefs } from "vue";
-import { NodePreview } from "@knime/components";
 import NodeName from "./NodeName";
-import adjustPortFormat from "../utils/adjustPortFormat";
-import { truncateString } from "@knime/utils";
-import htmlToPlain from "../utils/htmlToPlain";
 
 const props = defineProps<{
-  nodeData: Node;
+  node: Node;
 }>();
-
-const { title: name, description, icon } = toRefs(props.nodeData);
-
-const {
-  type,
-  inPorts,
-  outPorts,
-  hasDynPorts,
-  data: dataUrl,
-} = toRefs(icon.value);
-
-const showTruncated = ref(true);
-
-const defaultMaxDescriptionLength = 200;
-const truncatedDescription = computed(() => {
-  const sanitized = htmlToPlain(description.value);
-  return truncateString(sanitized, defaultMaxDescriptionLength);
-});
 </script>
 
 <template>
   <div class="node-container">
     <div class="icon">
-      <NodePreview
-        class="preview"
-        :type="type"
-        :in-ports="inPorts.map(adjustPortFormat)"
-        :out-ports="outPorts.map(adjustPortFormat)"
-        :has-dyn-ports="hasDynPorts"
-        :icon="dataUrl"
-      />
-      <div class="node-type">{{ type }}</div>
+      <img :src="props.node.preview" />
+      <div class="node-type">{{ props.node.type }}</div>
     </div>
 
     <div class="text">
-      <NodeName :name="name" />
-      <p>
-        <span v-if="showTruncated" class="truncated-description"
-          >{{ truncatedDescription }}
-        </span>
-
-        <!-- eslint-disable vue/no-v-html -->
-        <span v-else v-html="description" />
-        <!-- eslint-enable vue/no-v-html -->
-        <span class="learn-more" @click="showTruncated = !showTruncated">{{
-          showTruncated ? "Show more" : "Show less"
-        }}</span>
-      </p>
+      <NodeName :name="props.node.title" />
+      <p>TODO link to Hub</p>
     </div>
   </div>
 </template>
@@ -95,31 +54,6 @@ const truncatedDescription = computed(() => {
       margin-bottom: -10px;
       width: 180px;
       height: 180px;
-    }
-  }
-
-  & .text {
-    padding: 20px;
-
-    p {
-      & .truncated-description {
-        margin-right: 10px;
-      }
-
-      & .learn-more {
-        opacity: 0;
-        font-weight: 500;
-        color: var(--knime-dove-gray);
-        white-space: nowrap;
-        cursor: pointer;
-        transition: opacity 0.3s ease;
-      }
-    }
-
-    &:hover {
-      & .learn-more {
-        opacity: 1;
-      }
     }
   }
 }
