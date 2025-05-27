@@ -1,11 +1,17 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
-const css = ["./public/css/index.css"];
+import { preset } from "@knime/styles/config/postcss.config.cjs";
 
+// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  css,
+  css: ["./public/css/index.css"],
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
   modules: ["@nuxt/eslint", "@pinia/nuxt"],
+  postcss: {
+    plugins: {
+      "postcss-mixins": {},
+      "postcss-preset-env": preset,
+    },
+  },
   runtimeConfig: {
     knimeServiceUser: "",
     knimeServicePassword: "",
