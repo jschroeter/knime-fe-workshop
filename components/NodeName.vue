@@ -140,11 +140,11 @@ const revealCorrectLetters = () => {
 };
 
 const onUserKeyStroke = (e) => {
-  if (e.key === "Enter") {
-    if (isSolved.value) {
+  if (isSolved.value) {
+    if (e.key === "Enter") {
       nextNode();
-      return;
     }
+    return;
   }
 
   if (e.key === "Escape") {
