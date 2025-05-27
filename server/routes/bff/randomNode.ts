@@ -14,12 +14,12 @@ const fetchTopNodes = defineCachedFunction(
           headers: {
             Host: "api.hubdev.knime.com",
             Authorization: `Basic ${btoa(
-              `${knimeServiceUser}:${knimeServicePassword}`
+              `${knimeServiceUser}:${knimeServicePassword}`,
             )}`,
           },
           timeout: 60000,
           retry: 0,
-        }
+        },
       );
       return topNodes;
     } catch (error) {
@@ -32,7 +32,7 @@ const fetchTopNodes = defineCachedFunction(
   },
   {
     maxAge: 60 * 60 * 1000, // Cache for 1 hour
-  }
+  },
 );
 
 const fetchNode = defineCachedFunction(
@@ -44,7 +44,7 @@ const fetchNode = defineCachedFunction(
           query: {
             details: "full",
           },
-        }
+        },
       );
 
       // add preview image URL to the node object
@@ -62,7 +62,7 @@ const fetchNode = defineCachedFunction(
   },
   {
     maxAge: 60 * 60 * 1000, // Cache for 1 hour
-  }
+  },
 );
 
 export default defineEventHandler(async (event) => {

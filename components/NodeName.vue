@@ -19,7 +19,7 @@ const letterAndState = computed(() => {
       index,
       letter,
       state,
-    })
+    }),
   );
 });
 
@@ -40,7 +40,7 @@ const revealTime = 3 * 1000;
 const startRevealInterval = () => {
   revealInterval = setInterval(() => {
     const hiddenEntries = Array.from(letterStateMap.value.entries()).filter(
-      ([_, value]) => value.state === "hidden"
+      ([_, value]) => value.state === "hidden",
     );
 
     if (hiddenEntries.length === 0) {
@@ -85,7 +85,7 @@ const solve = () => {
 
 const isSolved = computed(() => {
   return Array.from(letterStateMap.value.values()).every(
-    (entry) => entry.state === "revealed"
+    (entry) => entry.state === "revealed",
   );
 });
 
@@ -109,16 +109,16 @@ watch(
             playerGuess.value = "";
           }, 2000);
         },
-        { dedupe: true }
+        { dedupe: true },
       );
     });
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(playerGuess, (newPlayerGuess) => {
-  const answer = newPlayerGuess.trim().toLowerCase();
-  const expected = props.name.trim().toLowerCase();
+  const answer = newPlayerGuess.replace(/\s+/g, "").toLowerCase();
+  const expected = props.name.replace(/\s+/g, "").toLowerCase();
 
   if (answer === expected) {
     revealAll();

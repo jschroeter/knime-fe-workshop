@@ -58,7 +58,9 @@ defineProps<{
   font-size: 2.4em;
   font-weight: 800;
   text-transform: uppercase;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
   text-shadow: 1px 2px 0px white;
   letter-spacing: 1px;
 }
