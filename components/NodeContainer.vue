@@ -15,7 +15,9 @@ const props = defineProps<{
 
     <div class="text">
       <NodeName :name="props.node.title" />
-      <p>TODO link to Hub</p>
+      <NuxtLink :href="props.node.url" target="_blank"
+        >learn more about this node</NuxtLink
+      >
     </div>
   </div>
 </template>

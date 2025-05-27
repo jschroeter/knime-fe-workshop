@@ -27,6 +27,7 @@ const {
 
 <template>
   <div>
+    <p>Just start typing the name of the node</p>
     <div v-for="i in players.length" :key="i" class="player-container">
       <NodeContainer :node="node" />
     </div>

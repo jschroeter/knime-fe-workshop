@@ -143,7 +143,7 @@ onUnmounted(() => {
   </div>
 
   <Button v-if="!isSolved" with-border compact @click="revealAll">
-    No idea, I need help
+    No idea, please reveal
   </Button>
 </template>
 
