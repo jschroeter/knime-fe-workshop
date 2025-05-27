@@ -4,11 +4,13 @@ import isWhiteSpace from "../utils/isWhiteSpace";
 import { Button, ProgressBar } from "@knime/components";
 import knimeTriangle from "@knime/styles/img/KNIME_Triangle.svg?url";
 import party from "party-js";
-import { onKeyStroke, useSpeechRecognition } from "@vueuse/core";
+import { onKeyStroke, useInterval, useSpeechRecognition } from "@vueuse/core";
 
 const props = defineProps<{
   name: string;
 }>();
+
+const emit = defineEmits(["nextNode"]);
 
 const letterStateMap = ref(new Map<string, "hidden" | "revealed">());
 const playerGuess = ref("");
@@ -21,6 +23,28 @@ const letterAndState = computed(() => {
       state,
     }),
   );
+});
+
+const {
+  counter: progress,
+  reset,
+  resume,
+  pause,
+} = useInterval(100, {
+  controls: true,
+  immediate: false,
+});
+const progressToNextNode = () => {
+  reset();
+  resume();
+};
+
+watch(progress, (newProgress) => {
+  if (newProgress >= 10) {
+    pause();
+    emit("nextNode");
+    console.log("Progress to next node");
+  }
 });
 
 const initializeLetterStateMap = () => {
@@ -69,6 +93,7 @@ const revealAll = () => {
   for (const [index, entry] of letterStateMap.value.entries()) {
     letterStateMap.value.set(index, { ...entry, state: "revealed" });
   }
+  progressToNextNode();
 };
 
 const solve = () => {
@@ -81,6 +106,8 @@ const solve = () => {
 
   stopRevealInterval();
   playerGuess.value = "";
+
+  progressToNextNode();
 };
 
 const isSolved = computed(() => {
@@ -146,8 +173,6 @@ onUnmounted(() => {
 </script>
 
 <template>
-  Typed: {{ playerGuess }}<br />
-  Speech recognition: {{ result }}<br />
   <div class="node-name">
     <LetterContainer
       v-for="{ index, letter, state } in letterAndState"
@@ -160,11 +185,9 @@ onUnmounted(() => {
   <Button v-if="!isSolved" with-border compact @click="revealAll">
     No idea, please reveal
   </Button>
-  <Button v-if="isSolved" primary compact @click="revealAll">
-    Next node
-  </Button>
-  <ProgressBar :percentage="50" compact />
+  <ProgressBar v-if="isSolved" :percentage="progress * 10" compact />
 
+  <br /><br /><br />
   <Button
     v-if="isSupported"
     primary
@@ -173,6 +196,10 @@ onUnmounted(() => {
   >
     {{ isListening ? "stop" : "start" }} speech recognition
   </Button>
+
+  <br />
+  Typed: {{ playerGuess }}<br />
+  Speech recognition: {{ result }}<br />
 </template>
 
 <style scoped>

@@ -29,8 +29,7 @@ const {
   <div>
     <p>Just start typing the name of the node</p>
     <div v-for="i in players.length" :key="i" class="player-container">
-      <NodeContainer :node="node" />
+      <NodeContainer :node="node" @next-node="refresh" />
     </div>
-    <button @click="refresh">Next Node</button>
   </div>
 </template>

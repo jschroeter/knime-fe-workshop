@@ -4,6 +4,8 @@ import NodeName from "./NodeName";
 const props = defineProps<{
   node: Node;
 }>();
+
+const emit = defineEmits(["nextNode"]);
 </script>
 
 <template>
@@ -14,7 +16,7 @@ const props = defineProps<{
     </div>
 
     <div class="text">
-      <NodeName :name="props.node.title" />
+      <NodeName :name="props.node.title" @next-node="emit('nextNode')" />
       <NuxtLink :href="props.node.url" target="_blank"
         >learn more about this node</NuxtLink
       >
