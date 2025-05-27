@@ -102,6 +102,7 @@ const solve = () => {
 };
 
 const nextNode = () => {
+  playerGuess.value = "";
   nodeStore.fetch();
 };
 
@@ -110,8 +111,6 @@ const isSolved = computed(() => {
     (entry) => entry.state === "revealed",
   );
 });
-
-const startTimeout = ref<NodeJS.Timeout | undefined>();
 
 watch(playerGuess, (newPlayerGuess) => {
   const answer = newPlayerGuess.replace(/\s+/g, "").toLowerCase();
@@ -148,11 +147,17 @@ const onUserKeyStroke = (e) => {
     }
   }
 
+  if (e.key === "Escape") {
+    if (!isSolved.value) {
+      revealAll();
+      return;
+    }
+  }
+
   if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
   if (e.key.length > 1 && e.key !== "Backspace") return;
 
   e.preventDefault();
-  window.clearTimeout(startTimeout.value);
 
   if (e.key === "Backspace") {
     playerGuess.value = playerGuess.value.slice(0, -1);
@@ -161,10 +166,6 @@ const onUserKeyStroke = (e) => {
   }
 
   revealCorrectLetters();
-
-  startTimeout.value = setTimeout(() => {
-    playerGuess.value = "";
-  }, 3000);
 };
 
 watch(
@@ -212,9 +213,11 @@ onUnmounted(() => {
   <menu>
     <span class="score">Score: {{ nodeStore.score }}</span>
     <Button v-if="!isSolved" compact with-border @click="revealAll(false)">
-      No idea, please reveal
+      No idea, please reveal <kbd>ESC</kbd>
     </Button>
-    <Button v-else compact primary @click="nextNode"> Next node </Button>
+    <Button v-else compact primary @click="nextNode">
+      Next node <kbd>Enter</kbd>
+    </Button>
   </menu>
 </template>
 
@@ -263,5 +266,21 @@ menu {
     color: var(--knime-masala);
     font-weight: 800;
   }
+}
+
+kbd {
+  background-color: #eee;
+  border-radius: 3px;
+  border: 1px solid #b4b4b4;
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.2),
+    0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
+  color: #333;
+  display: inline-block;
+  font-size: 0.85em;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 4px;
+  margin-left: 5px;
 }
 </style>

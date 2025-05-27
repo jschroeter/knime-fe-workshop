@@ -3,7 +3,7 @@ import type { Node } from "~/shared/types";
 import type { FetchError } from "ofetch";
 
 const fetchTopNodes = defineCachedFunction(
-  async (event) => {
+  async (/* event */) => {
     // Just imagine we'd call e.g. a KNIME workflow deployed as REST service, basically a rather expensive call
     // to get the top nodes, which we don't want to do all the time. So we add some caching.
     // But for this exercise, we just return a static list of nodes.
@@ -44,6 +44,8 @@ const fetchTopNodes = defineCachedFunction(
   },
   {
     maxAge: 60 * 60 * 1000, // Cache for 1 hour
+    staleMaxAge: -1, // Allow stale data; re-fetch in background
+    getKey: () => "topNodes",
   },
 );
 
@@ -78,6 +80,9 @@ const fetchNode = defineCachedFunction(
   },
   {
     maxAge: 60 * 60 * 1000, // Cache for 1 hour
+    staleMaxAge: -1, // Allow stale data; re-fetch in background
+    getKey: (factoryName: Pick<MinimumNodeMetaInfo, "factoryName">) =>
+      `node:${factoryName}`,
   },
 );
 
