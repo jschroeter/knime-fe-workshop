@@ -13,4 +13,10 @@ export default defineNuxtConfig({
       // Keys within public, will be also exposed to the client-side
     },
   },
+  routeRules: {
+    // Homepage pre-rendered at build time
+    "/": { prerender: true },
+    // game only client-side rendered
+    "/game": { ssr: false },
+  },
 });
