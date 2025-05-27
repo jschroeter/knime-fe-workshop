@@ -2,15 +2,15 @@
 import { defineProps, onMounted, useTemplateRef } from "vue";
 import isWhiteSpace from "../utils/isWhiteSpace";
 import { Button, Label, InputField } from "@knime/components";
+import knimeTriangle from "@knime/styles/img/KNIME_Triangle.svg?url";
 import party from "party-js";
+import { onKeyStroke } from "@vueuse/core";
 
 const props = defineProps<{
   name: string;
 }>();
 
 const letterStateMap = ref(new Map<string, "hidden" | "revealed">());
-const dialogRef = ref<HTMLDialogElement | null>(null);
-const nodeNameRef = useTemplateRef("nodeName");
 const playerGuess = ref("");
 
 const letterAndState = computed(() => {
@@ -72,26 +72,15 @@ const revealAll = () => {
 };
 
 const solve = () => {
+  party.resolvableShapes["knime"] = `<img src="${knimeTriangle}"/>`;
+  party.sparkles(document.body, {
+    count: party.variation.range(20, 50),
+    size: party.variation.range(0.1, 0.2),
+    shapes: ["knime"],
+  });
+
   stopRevealInterval();
-  dialogRef.value?.showModal();
-};
-
-const onDialogSubmit = () => {
-  const answer = playerGuess.value.trim().toLowerCase();
-  const expected = props.name.trim().toLowerCase();
-
-  if (answer === expected) {
-    revealAll();
-    party.confetti(nodeNameRef.value, {
-      count: party.variation.range(20, 40),
-      size: party.variation.range(0.8, 1.2),
-    });
-  } else {
-    startRevealInterval();
-  }
-
   playerGuess.value = "";
-  dialogRef.value?.close();
 };
 
 const isSolved = computed(() => {
@@ -100,16 +89,42 @@ const isSolved = computed(() => {
   );
 });
 
+const startTimeout = ref<NodeJS.Timeout | null>(null);
+
 watch(
   () => props.name,
   () => {
     initializeLetterStateMap();
     onMounted(() => {
       startRevealInterval();
+
+      onKeyStroke(
+        (e) => {
+          e.preventDefault();
+          window.clearTimeout(startTimeout.value);
+          if (e.key.length === 1) {
+            playerGuess.value = playerGuess.value + e.key;
+          }
+          startTimeout.value = setTimeout(() => {
+            playerGuess.value = "";
+          }, 2000);
+        },
+        { dedupe: true }
+      );
     });
   },
   { immediate: true }
 );
+
+watch(playerGuess, (newPlayerGuess) => {
+  const answer = newPlayerGuess.trim().toLowerCase();
+  const expected = props.name.trim().toLowerCase();
+
+  if (answer === expected) {
+    revealAll();
+    solve();
+  }
+});
 
 onUnmounted(() => {
   stopRevealInterval();
@@ -117,7 +132,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="nodeName" class="node-name">
+  {{ playerGuess }}
+  <div class="node-name">
     <LetterContainer
       v-for="{ index, letter, state } in letterAndState"
       :key="`${index}-${letter}`"
@@ -126,20 +142,9 @@ onUnmounted(() => {
     />
   </div>
 
-  <Button v-if="!isSolved" primary @click="solve"> Solve </Button>
-
-  <dialog ref="dialogRef">
-    <form method="dialog" @submit.prevent="onDialogSubmit">
-      <Label text="Hi, my name is">
-        <InputField v-model="playerGuess" type="text" />
-      </Label>
-
-      <menu>
-        <Button compact with-border @click="dialogRef?.close()">Cancel</Button>
-        <Button compact primary type="submit">Submit</Button>
-      </menu>
-    </form>
-  </dialog>
+  <Button v-if="!isSolved" with-border compact @click="revealAll">
+    No idea, I need help
+  </Button>
 </template>
 
 <style scoped>
@@ -150,24 +155,5 @@ onUnmounted(() => {
   gap: 20px 5px;
   min-height: 120px;
   margin-bottom: 40px;
-}
-
-dialog {
-  width: 300px;
-  padding: 20px;
-  padding-bottom: 5px;
-  border: none;
-  background-color: var(--knime-white);
-
-  & menu {
-    display: flex;
-    gap: 10px;
-    justify-content: end;
-    margin-top: 20px;
-  }
-}
-dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.5); /* semi-transparent black */
-  backdrop-filter: blur(4px); /* optional: adds blur for a polished look */
 }
 </style>

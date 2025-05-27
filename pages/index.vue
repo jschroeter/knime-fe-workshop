@@ -38,11 +38,14 @@ const navigation = [
   <menu>
     <!-- eslint-disable-next-line vue/html-self-closing -->
     <img src="/public/KNIME_Logo_gray.svg" alt="KNIME Logo" />
-    <RouterLink v-for="item in navigation" :key="item.id" :to="item.to">
-      <Button v-bind="item.style" :disabled="item.disabled">{{
-        item.label
-      }}</Button>
-    </RouterLink>
+    <Button
+      v-for="item in navigation"
+      :key="item.id"
+      :to="item.to"
+      v-bind="item.style"
+      :disabled="item.disabled"
+      >{{ item.label }}</Button
+    >
   </menu>
 </template>
 
