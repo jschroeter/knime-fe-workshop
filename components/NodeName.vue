@@ -130,7 +130,6 @@ watch(
 
       onKeyStroke(
         (e) => {
-          e.preventDefault();
           window.clearTimeout(startTimeout.value);
           if (e.key.length === 1) {
             playerGuess.value = playerGuess.value + e.key;
@@ -156,12 +155,11 @@ watch(playerGuess, (newPlayerGuess) => {
   }
 });
 
-watch([result, isFinal], ([newResult, newIsFinal]) => {
-  if (!newIsFinal) return;
+watch(result, (newResult) => {
   const answer = newResult.replace(/\s+/g, "").toLowerCase();
   const expected = props.name.replace(/\s+/g, "").toLowerCase();
 
-  if (answer === expected) {
+  if (answer.includes(expected)) {
     revealAll();
     solve();
   }

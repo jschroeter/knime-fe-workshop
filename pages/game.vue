@@ -27,7 +27,7 @@ const {
 
 <template>
   <div>
-    <p>Just start typing the name of the node</p>
+    <p>Just start typing the name of the node. Or enable speech recognition.</p>
     <div v-for="i in players.length" :key="i" class="player-container">
       <NodeContainer :node="node" @next-node="refresh" />
     </div>
