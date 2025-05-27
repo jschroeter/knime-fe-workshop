@@ -12,7 +12,6 @@ const nodeStore = useNodeStore();
 <template>
   <div class="node-container">
     <div class="icon">
-      <!-- eslint-disable-next-line vue/html-self-closing -->
       <img :src="node.preview" />
       <div class="node-type">{{ node.type }}</div>
     </div>

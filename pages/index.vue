@@ -36,7 +36,6 @@ const navigation = [
 
 <template>
   <menu>
-    <!-- eslint-disable-next-line vue/html-self-closing -->
     <img src="/public/KNIME_Logo_gray.svg" alt="KNIME Logo" />
     <Button
       v-for="item in navigation"
