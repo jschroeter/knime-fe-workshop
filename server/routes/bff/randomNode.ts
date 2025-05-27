@@ -87,10 +87,17 @@ const fetchNode = defineCachedFunction(
 );
 
 export default defineEventHandler(async (event): Promise<Node> => {
-  const topNodes = await fetchTopNodes(event);
+  const topNodes = await fetchTopNodes();
 
-  // pick a random node from the top nodes
-  const randomIndex = Math.floor(Math.random() * topNodes.length);
+  // get "level" from query params, default to 10 if not provided or invalid
+  const levelParam = getQuery(event).level;
+  let level = Number(levelParam);
+  if (isNaN(level) || level < 1 || level > 10) level = 10;
+
+  // determine the range of nodes to pick from based on level
+  // level 1 means first 10% of top nodes, level 10 means 100%
+  const range = Math.max(1, Math.ceil((topNodes.length * level) / 10));
+  const randomIndex = Math.floor(Math.random() * range);
   const randomNode = topNodes[randomIndex];
   const result = await fetchNode(randomNode.nodeId);
 

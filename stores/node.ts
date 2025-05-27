@@ -9,8 +9,22 @@ export const useNodeStore = defineStore("node", () => {
   const node = ref<Node>();
   const trash = ref<Array<SolvedNode>>([]);
 
+  /** the score is just a sum of correctly guessed nodes */
+  const score = computed(() => {
+    return trash.value.reduce((acc, n) => acc + (n.solved ? 1 : 0), 0);
+  });
+
+  /** level 1 means first 10% of top nodes, level 10 means 100% */
+  const level = computed(() => {
+    return Math.min(10, Math.floor(score.value / 10) + 1);
+  });
+
   const fetch = async () => {
-    node.value = await $fetch("/bff/randomNode");
+    node.value = await $fetch("/bff/randomNode", {
+      query: {
+        level: level.value,
+      },
+    });
   };
 
   const addToTrash = (node: Node, solved: boolean) => {
@@ -22,8 +36,7 @@ export const useNodeStore = defineStore("node", () => {
     trashedNodes: trash,
     node,
     fetch,
-    score: computed(() => {
-      return trash.value.reduce((acc, n) => acc + (n.solved ? 1 : 0), 0);
-    }),
+    score,
+    level,
   };
 });

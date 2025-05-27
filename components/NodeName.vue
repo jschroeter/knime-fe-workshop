@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted } from "vue";
+import { onMounted } from "vue";
 import isWhiteSpace from "../utils/isWhiteSpace";
 import { Button, ProgressBar } from "@knime/components";
 import knimeTriangle from "@knime/styles/img/KNIME_Triangle.svg?url";
@@ -211,7 +211,9 @@ onUnmounted(() => {
   </div>
 
   <menu>
-    <span class="score">Score: {{ nodeStore.score }}</span>
+    <span class="score"
+      >Score: {{ nodeStore.score }} - Level {{ nodeStore.level }}</span
+    >
     <Button v-if="!isSolved" compact with-border @click="revealAll(false)">
       No idea, please reveal <kbd>ESC</kbd>
     </Button>
