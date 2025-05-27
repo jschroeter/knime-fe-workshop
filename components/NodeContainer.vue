@@ -54,7 +54,7 @@ defineProps<{
 
     & img {
       width: 140px;
-      height: auto;
+      aspect-ratio: 1 / 1;
     }
   }
 }
