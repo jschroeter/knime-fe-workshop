@@ -10,7 +10,5 @@ const node = computed(() => nodeStore.node);
 </script>
 
 <template>
-  <div>
-    <NodeContainer v-if="node" :node="node" />
-  </div>
+  <NodeContainer v-if="node" :node="node" />
 </template>

@@ -83,10 +83,11 @@ const stopRevealInterval = () => {
   }
 };
 
-const revealAll = () => {
+const revealAll = (solved = false) => {
   for (const [index, entry] of letterStateMap.value.entries()) {
     letterStateMap.value.set(index, { ...entry, state: "revealed" });
   }
+  nodeStore.addToTrash(nodeStore.node!, solved);
 };
 
 const solve = () => {
@@ -117,8 +118,8 @@ watch(playerGuess, (newPlayerGuess) => {
   const expected = props.name.replace(/\s+/g, "").toLowerCase();
 
   if (answer === expected) {
-    revealAll();
     solve();
+    revealAll(true);
   }
 });
 
@@ -156,7 +157,7 @@ const onUserKeyStroke = (e) => {
 
   startTimeout.value = setTimeout(() => {
     playerGuess.value = "";
-  }, 2000);
+  }, 3000);
 };
 
 watch(
@@ -196,15 +197,17 @@ onUnmounted(() => {
     />
   </div>
 
-  <p class="hint">
-    Just start typing the name of the node <span>{{ playerGuess }}</span>
-  </p>
+  <div class="hint">
+    Just start typing the name of the node
+    <span>{{ isSolved ? name : playerGuess }}</span>
+  </div>
 
   <menu>
-    <Button v-if="!isSolved" with-border @click="revealAll">
+    <span class="score">Score: {{ nodeStore.score }}</span>
+    <Button v-if="!isSolved" compact with-border @click="revealAll(false)">
       No idea, please reveal
     </Button>
-    <Button v-else with-border @click="nextNode"> Next node </Button>
+    <Button v-else compact with-border @click="nextNode"> Next node </Button>
   </menu>
 </template>
 
@@ -242,8 +245,17 @@ onUnmounted(() => {
 menu {
   display: flex;
   gap: 10px;
-  justify-content: flex-start;
+  margin-top: 20px;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
   padding-inline-start: 0;
+
+  & .score {
+    font-size: 18px;
+    color: var(--knime-masala);
+    font-weight: 800;
+  }
 }
 
 dialog {

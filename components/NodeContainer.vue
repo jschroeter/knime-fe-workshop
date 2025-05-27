@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import type { Node } from "../stores/node";
+import { type Node, useNodeStore } from "../stores/node";
+import { Pill } from "@knime/components";
 
 defineProps<{
   node: Node;
 }>();
+
+const nodeStore = useNodeStore();
 </script>
 
 <template>
@@ -18,11 +21,18 @@ defineProps<{
       <NodeName :name="node.title" />
     </div>
   </div>
-  <p>
-    <NuxtLink external target="_blank" :to="node.url"
-      >Show node on KNIME Hub</NuxtLink
+
+  <div class="trashed-nodes">
+    <Pill
+      v-for="trashedNode in nodeStore.trashedNodes"
+      :key="trashedNode.url"
+      :variant="trashedNode.solved ? 'light' : 'error'"
     >
-  </p>
+      <NuxtLink external target="_blank" :to="trashedNode.url">{{
+        trashedNode.title
+      }}</NuxtLink></Pill
+    >
+  </div>
 </template>
 
 <style scoped>
@@ -65,7 +75,20 @@ defineProps<{
   }
 }
 
-p {
-  text-align: right;
+.trashed-nodes {
+  padding: 20px 0;
+  flex: 0 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-width: 800px;
+
+  & .pill {
+    padding: 3px 10px;
+
+    & a {
+      text-decoration: none;
+    }
+  }
 }
 </style>
