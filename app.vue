@@ -10,7 +10,7 @@ useHead({
   meta: [
     {
       name: "description",
-      content: "A fun game to guess KNIME nodes!",
+      content: "Become a true KNIME node master!",
     },
   ],
   link: [
