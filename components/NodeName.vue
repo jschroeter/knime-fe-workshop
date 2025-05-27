@@ -122,6 +122,43 @@ watch(playerGuess, (newPlayerGuess) => {
   }
 });
 
+const revealCorrectLetters = () => {
+  const guess = playerGuess.value.toLowerCase();
+  const name = props.name.toLowerCase();
+
+  if (guess.length === 0) return;
+
+  letterStateMap.value.forEach((entry, index) => {
+    if (
+      entry.state === "hidden" &&
+      guess[index] &&
+      guess[index] === name[index]
+    ) {
+      letterStateMap.value.set(index, { ...entry, state: "revealed" });
+    }
+  });
+};
+
+const onUserKeyStroke = (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+  if (e.key.length > 1 && e.key !== "Backspace") return;
+
+  e.preventDefault();
+  window.clearTimeout(startTimeout.value);
+
+  if (e.key === "Backspace") {
+    playerGuess.value = playerGuess.value.slice(0, -1);
+  } else {
+    playerGuess.value += e.key;
+  }
+
+  revealCorrectLetters();
+
+  startTimeout.value = setTimeout(() => {
+    playerGuess.value = "";
+  }, 2000);
+};
+
 watch(
   () => props.name,
   () => {
@@ -139,23 +176,7 @@ onMounted(() => {
     { immediate: true },
   );
 
-  onKeyStroke((e) => {
-    if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
-    if (e.key.length > 1 && e.key !== "Backspace") return;
-
-    e.preventDefault();
-    window.clearTimeout(startTimeout.value);
-
-    if (e.key === "Backspace") {
-      playerGuess.value = playerGuess.value.slice(0, -1);
-    } else {
-      playerGuess.value += e.key;
-    }
-
-    startTimeout.value = setTimeout(() => {
-      playerGuess.value = "";
-    }, 2000);
-  });
+  onKeyStroke(onUserKeyStroke);
 });
 
 onUnmounted(() => {
