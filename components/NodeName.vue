@@ -141,6 +141,13 @@ const revealCorrectLetters = () => {
 };
 
 const onUserKeyStroke = (e) => {
+  if (e.key === "Enter") {
+    if (isSolved.value) {
+      nextNode();
+      return;
+    }
+  }
+
   if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
   if (e.key.length > 1 && e.key !== "Backspace") return;
 
@@ -207,7 +214,7 @@ onUnmounted(() => {
     <Button v-if="!isSolved" compact with-border @click="revealAll(false)">
       No idea, please reveal
     </Button>
-    <Button v-else compact with-border @click="nextNode"> Next node </Button>
+    <Button v-else compact primary @click="nextNode"> Next node </Button>
   </menu>
 </template>
 
