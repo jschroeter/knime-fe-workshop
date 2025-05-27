@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { defineProps, onMounted, useTemplateRef } from "vue";
+import { defineProps, onMounted } from "vue";
 import isWhiteSpace from "../utils/isWhiteSpace";
-import { Button, Label, InputField } from "@knime/components";
+import { Button, ProgressBar } from "@knime/components";
 import knimeTriangle from "@knime/styles/img/KNIME_Triangle.svg?url";
 import party from "party-js";
-import { onKeyStroke } from "@vueuse/core";
+import { onKeyStroke, useSpeechRecognition } from "@vueuse/core";
 
 const props = defineProps<{
   name: string;
@@ -91,6 +91,9 @@ const isSolved = computed(() => {
 
 const startTimeout = ref<NodeJS.Timeout | null>(null);
 
+const { isSupported, isListening, isFinal, result, start, stop } =
+  useSpeechRecognition({ lang: "en-US" });
+
 watch(
   () => props.name,
   () => {
@@ -126,13 +129,25 @@ watch(playerGuess, (newPlayerGuess) => {
   }
 });
 
+watch([result, isFinal], ([newResult, newIsFinal]) => {
+  if (!newIsFinal) return;
+  const answer = newResult.replace(/\s+/g, "").toLowerCase();
+  const expected = props.name.replace(/\s+/g, "").toLowerCase();
+
+  if (answer === expected) {
+    revealAll();
+    solve();
+  }
+});
+
 onUnmounted(() => {
   stopRevealInterval();
 });
 </script>
 
 <template>
-  {{ playerGuess }}
+  Typed: {{ playerGuess }}<br />
+  Speech recognition: {{ result }}<br />
   <div class="node-name">
     <LetterContainer
       v-for="{ index, letter, state } in letterAndState"
@@ -144,6 +159,19 @@ onUnmounted(() => {
 
   <Button v-if="!isSolved" with-border compact @click="revealAll">
     No idea, please reveal
+  </Button>
+  <Button v-if="isSolved" primary compact @click="revealAll">
+    Next node
+  </Button>
+  <ProgressBar :percentage="50" compact />
+
+  <Button
+    v-if="isSupported"
+    primary
+    compact
+    @click="isListening ? stop() : start()"
+  >
+    {{ isListening ? "stop" : "start" }} speech recognition
   </Button>
 </template>
 
