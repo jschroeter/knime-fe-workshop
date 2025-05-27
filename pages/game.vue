@@ -28,6 +28,7 @@ const {
 <template>
   <div>
     <p>Just start typing the name of the node. Or enable speech recognition.</p>
+    <h3>Nodes per Minute: TODO</h3>
     <div v-for="i in players.length" :key="i" class="player-container">
       <NodeContainer :node="node" @next-node="refresh" />
     </div>
