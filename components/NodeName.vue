@@ -257,24 +257,4 @@ menu {
     font-weight: 800;
   }
 }
-
-dialog {
-  width: 300px;
-  padding: 20px;
-  padding-bottom: 5px;
-  border: none;
-  background-color: var(--knime-white);
-
-  & menu {
-    display: flex;
-    gap: 10px;
-    justify-content: end;
-    margin-top: 20px;
-  }
-}
-
-dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-}
 </style>
