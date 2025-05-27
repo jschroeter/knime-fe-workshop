@@ -1,12 +1,5 @@
 import { defineStore } from "pinia";
-
-export type Node = {
-  title: string;
-  string: string;
-  type: string;
-  preview: string;
-  url: string;
-};
+import type { Node } from "~/shared/types";
 
 type SolvedNode = Node & {
   solved: boolean;
@@ -17,7 +10,7 @@ export const useNodeStore = defineStore("node", () => {
   const trash = ref<Array<SolvedNode>>([]);
 
   const fetch = async () => {
-    node.value = await $fetch<Node>("/bff/randomNode");
+    node.value = await $fetch("/bff/randomNode");
   };
 
   const addToTrash = (node: Node, solved: boolean) => {

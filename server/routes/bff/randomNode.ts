@@ -1,7 +1,18 @@
+import type { MinimumNodeMetaInfo, TopNodes } from "~/server/types";
+import type { Node } from "~/shared/types";
+import type { FetchError } from "ofetch";
+
 const fetchTopNodes = defineCachedFunction(
   async (event) => {
-    const { knimeServiceUser, knimeServicePassword } = useRuntimeConfig(event);
+    // Just imagine we'd call e.g. a KNIME workflow deployed as REST service, basically a rather expensive call
+    // to get the top nodes, which we don't want to do all the time. So we add some caching.
+    // But for this exercise, we just return a static list of nodes.
+    const topNodes: TopNodes = (await import("./fallbackTopNodes.json"))
+      .default as TopNodes;
+    return topNodes;
 
+    /*
+    const { knimeServiceUser, knimeServicePassword } = useRuntimeConfig(event);
     try {
       const topNodes = await $fetch(
         "https://api.hubdev.knime.com/deployments/rest:1255437a-2b46-4d70-98df-6e5360c6d34d/raw-execution",
@@ -23,41 +34,46 @@ const fetchTopNodes = defineCachedFunction(
       );
       return topNodes;
     } catch (error) {
-      console.error("Failed to fetch top nodes:", error.data);
+      console.error("Failed to fetch top nodes:", (error as FetchError).data);
       return createError({
         statusCode: 500,
         statusMessage: "Failed to fetch top nodes",
       });
     }
+    */
   },
   {
     maxAge: 60 * 60 * 1000, // Cache for 1 hour
   },
 );
 
+/**
+ * Fetches details of a single node from KNIME Community Hub.
+ */
 const fetchNode = defineCachedFunction(
-  async (nodeId) => {
+  async (factoryName: Pick<MinimumNodeMetaInfo, "factoryName">) => {
     try {
-      const node: object = await $fetch(
-        "https://api.hubdev.knime.com/nodes/" + nodeId,
+      const node = await $fetch<MinimumNodeMetaInfo>(
+        "https://api.hubdev.knime.com/nodes/" + factoryName,
         {
           query: {
-            details: "full",
+            details: "minimum",
           },
         },
       );
 
       // add preview image URL to the node object
-      const nodeWithPreview = {
+      const nodeWithPreview: Node = {
+        id: node.id,
         title: node.title,
-        type: node.nodeType,
+        nodeType: node.nodeType,
         preview: "https://hub.knime.com/site/png-icon/Node/" + node.id,
         url: "https://hub.knime.com/n/" + node.id.replace("*", ""),
       };
 
       return nodeWithPreview;
     } catch (error) {
-      console.error("Failed to fetch node: ", error.data);
+      console.error("Failed to fetch node: ", (error as FetchError).data);
     }
   },
   {
@@ -65,36 +81,20 @@ const fetchNode = defineCachedFunction(
   },
 );
 
-export default defineEventHandler(async (event) => {
-  //const topNodes = await fetchTopNodes(event);
+export default defineEventHandler(async (event): Promise<Node> => {
+  const topNodes = await fetchTopNodes(event);
 
-  const topNodes = [
-    {
-      nodeId: "org.knime.base.node.preproc.groupby.GroupByNodeFactory#GroupBy",
-    },
-    {
-      nodeId:
-        "org.knime.base.node.rules.engine.RuleEngineNodeFactory#Rule Engine",
-    },
-    {
-      nodeId:
-        "org.knime.base.node.flowvariable.tablerowtovariable3.TableToVariable3NodeFactory#Table Row to Variable",
-    },
-    {
-      nodeId:
-        "org.knime.base.node.preproc.stringmanipulation.multicolumn.MultiColumnStringManipulationNodeFactory#String Manipulation (Multi Column)",
-    },
-  ];
-
+  // pick a random node from the top nodes
   const randomIndex = Math.floor(Math.random() * topNodes.length);
   const randomNode = topNodes[randomIndex];
   const result = await fetchNode(randomNode.nodeId);
 
-  return (
-    result ||
-    createError({
+  if (!result) {
+    throw createError({
       statusCode: 500,
-      statusMessage: "Failed to fetch node details",
-    })
-  );
+      statusMessage: "Failed to fetch random node",
+    });
+  }
+
+  return result;
 });
