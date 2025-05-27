@@ -4,15 +4,21 @@ import isWhiteSpace from "../utils/isWhiteSpace";
 import { Button, ProgressBar } from "@knime/components";
 import knimeTriangle from "@knime/styles/img/KNIME_Triangle.svg?url";
 import party from "party-js";
-import { onKeyStroke, useInterval, useSpeechRecognition } from "@vueuse/core";
+import { onKeyStroke } from "@vueuse/core";
+import { useNodeStore } from "../stores/node";
+
+type LetterState = {
+  letter: string;
+  state: "hidden" | "revealed";
+};
 
 const props = defineProps<{
   name: string;
 }>();
 
-const emit = defineEmits(["nextNode"]);
+const nodeStore = useNodeStore();
 
-const letterStateMap = ref(new Map<string, "hidden" | "revealed">());
+const letterStateMap = ref(new Map<number, LetterState>());
 const playerGuess = ref("");
 
 const letterAndState = computed(() => {
@@ -23,28 +29,6 @@ const letterAndState = computed(() => {
       state,
     }),
   );
-});
-
-const {
-  counter: progress,
-  reset,
-  resume,
-  pause,
-} = useInterval(100, {
-  controls: true,
-  immediate: false,
-});
-const progressToNextNode = () => {
-  reset();
-  resume();
-};
-
-watch(progress, (newProgress) => {
-  if (newProgress >= 10) {
-    pause();
-    emit("nextNode");
-    console.log("Progress to next node");
-  }
 });
 
 const initializeLetterStateMap = () => {
@@ -58,10 +42,11 @@ const initializeLetterStateMap = () => {
   });
 };
 
-let revealInterval: ReturnType<typeof setInterval>;
+let revealInterval: ReturnType<typeof setInterval> | undefined;
 const revealTime = 3 * 1000;
 
 const startRevealInterval = () => {
+  stopRevealInterval();
   revealInterval = setInterval(() => {
     const hiddenEntries = Array.from(letterStateMap.value.entries()).filter(
       ([_, value]) => value.state === "hidden",
@@ -82,10 +67,19 @@ const startRevealInterval = () => {
   }, revealTime);
 };
 
+const percentage = computed(() => {
+  const totalLetters = letterStateMap.value.size;
+  const revealedLetters = Array.from(letterStateMap.value.values()).filter(
+    (entry) => entry.state === "revealed",
+  ).length;
+
+  return totalLetters > 0 ? (revealedLetters / totalLetters) * 100 : 0;
+});
+
 const stopRevealInterval = () => {
   if (revealInterval) {
     clearInterval(revealInterval);
-    revealInterval = null;
+    revealInterval = undefined;
   }
 };
 
@@ -93,7 +87,6 @@ const revealAll = () => {
   for (const [index, entry] of letterStateMap.value.entries()) {
     letterStateMap.value.set(index, { ...entry, state: "revealed" });
   }
-  progressToNextNode();
 };
 
 const solve = () => {
@@ -105,9 +98,10 @@ const solve = () => {
   });
 
   stopRevealInterval();
-  playerGuess.value = "";
+};
 
-  progressToNextNode();
+const nextNode = () => {
+  nodeStore.fetch();
 };
 
 const isSolved = computed(() => {
@@ -116,34 +110,7 @@ const isSolved = computed(() => {
   );
 });
 
-const startTimeout = ref<NodeJS.Timeout | null>(null);
-
-const { isSupported, isListening, isFinal, result, start, stop } =
-  useSpeechRecognition({ lang: "en-US" });
-
-watch(
-  () => props.name,
-  () => {
-    initializeLetterStateMap();
-    onMounted(() => {
-      startRevealInterval();
-
-      onKeyStroke(
-        (e) => {
-          window.clearTimeout(startTimeout.value);
-          if (e.key.length === 1) {
-            playerGuess.value = playerGuess.value + e.key;
-          }
-          startTimeout.value = setTimeout(() => {
-            playerGuess.value = "";
-          }, 2000);
-        },
-        { dedupe: true },
-      );
-    });
-  },
-  { immediate: true },
-);
+const startTimeout = ref<NodeJS.Timeout | undefined>();
 
 watch(playerGuess, (newPlayerGuess) => {
   const answer = newPlayerGuess.replace(/\s+/g, "").toLowerCase();
@@ -155,14 +122,40 @@ watch(playerGuess, (newPlayerGuess) => {
   }
 });
 
-watch(result, (newResult) => {
-  const answer = newResult.replace(/\s+/g, "").toLowerCase();
-  const expected = props.name.replace(/\s+/g, "").toLowerCase();
+watch(
+  () => props.name,
+  () => {
+    initializeLetterStateMap();
+  },
+  { immediate: true },
+);
 
-  if (answer.includes(expected)) {
-    revealAll();
-    solve();
-  }
+onMounted(() => {
+  watch(
+    () => props.name,
+    () => {
+      startRevealInterval();
+    },
+    { immediate: true },
+  );
+
+  onKeyStroke((e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    if (e.key.length > 1 && e.key !== "Backspace") return;
+
+    e.preventDefault();
+    window.clearTimeout(startTimeout.value);
+
+    if (e.key === "Backspace") {
+      playerGuess.value = playerGuess.value.slice(0, -1);
+    } else {
+      playerGuess.value += e.key;
+    }
+
+    startTimeout.value = setTimeout(() => {
+      playerGuess.value = "";
+    }, 2000);
+  });
 });
 
 onUnmounted(() => {
@@ -171,6 +164,8 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <ProgressBar compact :percentage="percentage" />
+
   <div class="node-name">
     <LetterContainer
       v-for="{ index, letter, state } in letterAndState"
@@ -180,33 +175,73 @@ onUnmounted(() => {
     />
   </div>
 
-  <Button v-if="!isSolved" with-border compact @click="revealAll">
-    No idea, please reveal
-  </Button>
-  <ProgressBar v-if="isSolved" :percentage="progress * 10" compact />
+  <p class="hint">
+    Just start typing the name of the node <span>{{ playerGuess }}</span>
+  </p>
 
-  <br /><br /><br />
-  <Button
-    v-if="isSupported"
-    primary
-    compact
-    @click="isListening ? stop() : start()"
-  >
-    {{ isListening ? "stop" : "start" }} speech recognition
-  </Button>
-
-  <br />
-  Typed: {{ playerGuess }}<br />
-  Speech recognition: {{ result }}<br />
+  <menu>
+    <Button v-if="!isSolved" with-border @click="revealAll">
+      No idea, please reveal
+    </Button>
+    <Button v-else with-border @click="nextNode"> Next node </Button>
+  </menu>
 </template>
 
 <style scoped>
+.progress-bar-wrapper {
+  margin-bottom: 20px;
+}
+
 .node-name {
   display: flex;
   justify-content: flex-start;
   flex-wrap: wrap;
   gap: 20px 5px;
-  min-height: 120px;
   margin-bottom: 40px;
+}
+
+.hint {
+  font-size: 14px;
+  color: var(--knime-gray);
+  margin-bottom: 20px;
+  border-color: var(--knime-cornflower);
+  background-color: var(--knime-cornflower-ultra-light);
+  font-size: 12px;
+  line-height: 14px;
+  border-left-width: 2px;
+  border-left-style: solid;
+  padding: 10px;
+
+  & span {
+    font-weight: bold;
+    color: var(--knime-masala);
+  }
+}
+
+menu {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  padding-inline-start: 0;
+}
+
+dialog {
+  width: 300px;
+  padding: 20px;
+  padding-bottom: 5px;
+  border: none;
+  background-color: var(--knime-white);
+
+  & menu {
+    display: flex;
+    gap: 10px;
+    justify-content: end;
+    margin-top: 20px;
+  }
+}
+
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
 }
 </style>

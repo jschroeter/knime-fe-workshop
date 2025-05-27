@@ -1,36 +1,16 @@
 <script setup lang="ts">
-import NodeContainer from "../components/NodeContainer.vue";
-import type { NodeList } from "../components/node.types.ts";
+import { useNodeStore } from "~/stores/node";
 
 definePageMeta({ layout: "with-header" });
 
-type Player = {
-  name: string;
-  score: number;
-};
-type Players = Player[];
+const nodeStore = useNodeStore();
+await useAsyncData("randomNode", () => nodeStore.fetch());
 
-const players: Players = ref([
-  {
-    name: "Player 1",
-    score: 0,
-  },
-]);
-
-const {
-  data: node,
-  status,
-  error,
-  refresh,
-} = await useAsyncData("randomNode", () => $fetch("/bff/randomNode"));
+const node = computed(() => nodeStore.node);
 </script>
 
 <template>
   <div>
-    <p>Just start typing the name of the node. Or enable speech recognition.</p>
-    <h3>Nodes per Minute: TODO</h3>
-    <div v-for="i in players.length" :key="i" class="player-container">
-      <NodeContainer :node="node" @next-node="refresh" />
-    </div>
+    <NodeContainer v-if="node" :node="node" />
   </div>
 </template>

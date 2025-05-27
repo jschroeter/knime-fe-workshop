@@ -1,27 +1,28 @@
 <script setup lang="ts">
-import NodeName from "./NodeName";
+import type { Node } from "../stores/node";
 
-const props = defineProps<{
+defineProps<{
   node: Node;
 }>();
-
-const emit = defineEmits(["nextNode"]);
 </script>
 
 <template>
   <div class="node-container">
     <div class="icon">
-      <img :src="props.node.preview" />
-      <div class="node-type">{{ props.node.type }}</div>
+      <!-- eslint-disable-next-line vue/html-self-closing -->
+      <img :src="node.preview" />
+      <div class="node-type">{{ node.type }}</div>
     </div>
 
     <div class="text">
-      <NodeName :name="props.node.title" @next-node="emit('nextNode')" />
-      <NuxtLink :href="props.node.url" target="_blank"
-        >learn more about this node</NuxtLink
-      >
+      <NodeName :name="node.title" />
     </div>
   </div>
+  <p>
+    <NuxtLink external target="_blank" :to="node.url"
+      >Show node on KNIME Hub</NuxtLink
+    >
+  </p>
 </template>
 
 <style scoped>
@@ -34,6 +35,10 @@ const emit = defineEmits(["nextNode"]);
   background-color: var(--knime-white);
   height: 100%;
   max-width: 800px;
+
+  & .text {
+    padding: 20px;
+  }
 
   & .icon {
     flex: 0 0 100px;
@@ -53,12 +58,14 @@ const emit = defineEmits(["nextNode"]);
       max-width: 100%;
     }
 
-    & .preview {
-      margin-top: -10px;
-      margin-bottom: -10px;
-      width: 180px;
-      height: 180px;
+    & img {
+      width: 140px;
+      height: auto;
     }
   }
+}
+
+p {
+  text-align: right;
 }
 </style>

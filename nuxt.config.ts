@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   css,
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
-  modules: ["@nuxt/eslint"],
+  modules: ["@nuxt/eslint", "@pinia/nuxt"],
   runtimeConfig: {
     knimeServiceUser: "",
     knimeServicePassword: "",
