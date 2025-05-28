@@ -187,9 +187,12 @@ onUnmounted(() => {
     />
   </div>
 
-  <div class="hint">Just start typing the name of the node</div>
-
-  <InputField ref="input" v-model="playerGuess" type="text" />
+  <InputField
+    ref="input"
+    v-model="playerGuess"
+    type="text"
+    placeholder="Just start typing the name of the node…"
+  />
 
   <menu>
     <!-- TODO instead of score, give 1 point for each correctly guessed character? -->
@@ -216,19 +219,6 @@ onUnmounted(() => {
   flex-wrap: wrap;
   gap: 20px 5px;
   margin-bottom: 40px;
-}
-
-.hint {
-  font-size: 14px;
-  color: var(--knime-gray);
-  margin-bottom: 20px;
-  border-color: var(--knime-cornflower);
-  background-color: var(--knime-cornflower-ultra-light);
-  font-size: 12px;
-  line-height: 14px;
-  border-left-width: 2px;
-  border-left-style: solid;
-  padding: 10px;
 }
 
 .input-wrapper {
