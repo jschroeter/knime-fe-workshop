@@ -2,7 +2,7 @@ import { preset } from "@knime/styles/config/postcss.config.cjs";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  css: ["./public/css/index.css"],
+  css: ["./assets/index.css"],
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
   modules: ["@nuxt/eslint", "@pinia/nuxt"],

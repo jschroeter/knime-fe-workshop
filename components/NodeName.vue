@@ -2,8 +2,7 @@
 import { onMounted } from "vue";
 import isWhiteSpace from "../utils/isWhiteSpace";
 import { Button, ProgressBar } from "@knime/components";
-import knimeTriangle from "@knime/styles/img/KNIME_Triangle.svg?url";
-import party from "party-js";
+
 import { onKeyStroke } from "@vueuse/core";
 import { useGameStore } from "../stores/game";
 
@@ -92,12 +91,7 @@ const revealAll = (solved = false) => {
 };
 
 const solve = () => {
-  party.resolvableShapes["knime"] = `<img src="${knimeTriangle}"/>`;
-  party.sparkles(document.body, {
-    count: party.variation.range(20, 50),
-    size: party.variation.range(0.1, 0.2),
-    shapes: ["knime"],
-  });
+  useParty().sparkles();
 
   stopRevealInterval();
 };

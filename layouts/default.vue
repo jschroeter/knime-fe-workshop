@@ -1,8 +1,12 @@
+<script setup lang="ts">
+import knimeLogo from "@knime/styles/img/KNIME_Logo_gray.svg?url";
+</script>
+
 <template>
   <div>
     <header>
       <h2>
-        <img src="/public/KNIME_Logo_gray.svg" alt="KNIME Logo" />
+        <img :src="knimeLogo" alt="KNIME Logo" />
         Game of Nodes
       </h2>
     </header>
