@@ -6,6 +6,7 @@ const gameStore = useGameStore();
 
 <template>
   <div class="played-nodes">
+    <!-- TODO remove pill but keep it clickable -->
     <Pill
       v-for="playedNode in gameStore.playedNodes"
       :key="playedNode.id"

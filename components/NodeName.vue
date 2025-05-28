@@ -45,6 +45,7 @@ const initializeLetterStateMap = () => {
 let revealInterval: ReturnType<typeof setInterval> | undefined;
 const revealTime = 3 * 1000;
 
+// TODO pause the interval when the user is typing
 const startRevealInterval = () => {
   stopRevealInterval();
   revealInterval = setInterval(() => {
@@ -123,6 +124,7 @@ watch(playerGuess, (newPlayerGuess) => {
 });
 
 const revealCorrectLetters = () => {
+  // TODO ignore whitespaces (and ideally all non-alphabetical characters?), it shouldn't matter if the user types them or not
   const guess = playerGuess.value.toLowerCase();
   const name = props.name.toLowerCase();
 
@@ -211,6 +213,7 @@ onUnmounted(() => {
   </div>
 
   <menu>
+    <!-- TODO instead of score, give 1 point for each correctly guessed character? -->
     <span class="score"
       >Score: {{ gameStore.score }} - Level {{ gameStore.level }}</span
     >

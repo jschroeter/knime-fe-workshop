@@ -13,7 +13,7 @@ defineProps<{
       <div class="node-type">{{ node.nodeType }}</div>
     </div>
 
-    <div class="text">
+    <div class="name">
       <NodeName :name="node.title" />
     </div>
   </div>
@@ -32,7 +32,7 @@ defineProps<{
   height: 100%;
   max-width: 800px;
 
-  & .text {
+  & .name {
     padding: 20px;
   }
 
