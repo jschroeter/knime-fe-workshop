@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, useTemplateRef } from "vue";
 import isWhiteSpace from "../utils/isWhiteSpace";
 import isSpecialCharacter from "../utils/isSpecialCharacter";
 import { Button, ProgressBar, InputField } from "@knime/components";
@@ -143,7 +143,7 @@ const revealCorrectLetters = () => {
   });
 };
 
-const input = ref<(HTMLInputElement & { active: boolean }) | null>(null);
+const input = useTemplateRef("input");
 const onTyping = () => {
   if (!input.value?.active) {
     input.value?.focus();
