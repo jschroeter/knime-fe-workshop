@@ -1,93 +1,26 @@
-import type { MinimumNodeMetaInfo, TopNodes } from "~/server/types";
 import type { Node } from "~/shared/types";
-import type { FetchError } from "ofetch";
+import { fetchTopNodes } from "~/server/api/topNodes";
+import { fetchNode } from "~/server/api/node";
 
-const fetchTopNodes = defineCachedFunction(
-  async (/* event */) => {
-    // Just imagine we'd call e.g. a KNIME workflow deployed as REST service, basically a rather expensive call
-    // to get the top nodes, which we don't want to do all the time. So we add some caching.
-    // But for this exercise, we just return a static list of nodes.
-    const topNodes: TopNodes = (await import("./fallbackTopNodes.json"))
-      .default as TopNodes;
-    return topNodes;
+const cachedTopNodes = defineCachedFunction(fetchTopNodes, {
+  maxAge: 24 * 60 * 60 * 1000, // cache for 1 day
+  staleMaxAge: -1, // stale-while-revalidate; re-fetches in background
+  getKey: () => "topNodes",
+});
 
-    /*
-    const { knimeServiceUser, knimeServicePassword } = useRuntimeConfig(event);
-    try {
-      const topNodes = await $fetch(
-        "https://api.hubdev.knime.com/deployments/rest:1255437a-2b46-4d70-98df-6e5360c6d34d/raw-execution",
-        {
-          query: {
-            timeout: 50000,
-            reset: true,
-            keepJob: false,
-          },
-          headers: {
-            Host: "api.hubdev.knime.com",
-            Authorization: `Basic ${btoa(
-              `${knimeServiceUser}:${knimeServicePassword}`,
-            )}`,
-          },
-          timeout: 60000,
-          retry: 0,
-        },
-      );
-      return topNodes;
-    } catch (error) {
-      console.error("Failed to fetch top nodes:", (error as FetchError).data);
-      return createError({
-        statusCode: 500,
-        statusMessage: "Failed to fetch top nodes",
-      });
-    }
-    */
+const cachedNode = defineCachedFunction(
+  async (factoryName: string) => {
+    return await fetchNode(factoryName);
   },
   {
-    maxAge: 60 * 60 * 1000, // Cache for 1 hour
-    staleMaxAge: -1, // Allow stale data; re-fetch in background
-    getKey: () => "topNodes",
+    maxAge: 24 * 60 * 60 * 1000, // cache for 1 day
+    staleMaxAge: -1, // stale-while-revalidate; re-fetches in background
+    getKey: (factoryName) => `node:${factoryName}`,
   },
 );
 
-/**
- * Fetches details of a single node from KNIME Community Hub.
- */
-const fetchNode = defineCachedFunction(
-  async (factoryName: Pick<MinimumNodeMetaInfo, "factoryName">) => {
-    try {
-      const node = await $fetch<MinimumNodeMetaInfo>(
-        "https://api.hubdev.knime.com/nodes/" + factoryName,
-        {
-          query: {
-            details: "minimum",
-          },
-        },
-      );
-
-      // add preview image URL to the node object
-      const nodeWithPreview: Node = {
-        id: node.id,
-        title: node.title,
-        nodeType: node.nodeType,
-        preview: "https://hub.knime.com/site/png-icon/Node/" + node.id,
-        url: "https://hub.knime.com/n/" + node.id.replace("*", ""),
-      };
-
-      return nodeWithPreview;
-    } catch (error) {
-      console.error("Failed to fetch node: ", (error as FetchError).data);
-    }
-  },
-  {
-    maxAge: 60 * 60 * 1000, // Cache for 1 hour
-    staleMaxAge: -1, // Allow stale data; re-fetch in background
-    getKey: (factoryName: Pick<MinimumNodeMetaInfo, "factoryName">) =>
-      `node:${factoryName}`,
-  },
-);
-
-export default defineEventHandler(async (event): Promise<Node> => {
-  const topNodes = await fetchTopNodes();
+export default defineEventHandler(async (event) => {
+  const topNodes = await cachedTopNodes();
 
   // get "level" from query params, default to 10 if not provided or invalid
   const levelParam = getQuery(event).level;
@@ -97,16 +30,24 @@ export default defineEventHandler(async (event): Promise<Node> => {
   // determine the range of nodes to pick from based on level
   // level 1 means first 10% of top nodes, level 10 means 100%
   const range = Math.max(1, Math.ceil((topNodes.length * level) / 10));
-  const randomIndex = Math.floor(Math.random() * range);
-  const randomNode = topNodes[randomIndex];
-  const result = await fetchNode(randomNode.nodeId);
+  let node: Node | undefined | null;
+  let attempts = 0;
 
-  if (!result) {
+  // pick a random node, but there might be nodes that are not available
+  // or deprecated, therefore let's try a few times until we find a valid one
+  while (!node && attempts < 5) {
+    const randomIndex = Math.floor(Math.random() * range);
+    const randomNodeId = topNodes[randomIndex].nodeId;
+    node = await cachedNode(randomNodeId);
+    attempts++;
+  }
+
+  if (!node) {
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to fetch random node",
     });
   }
 
-  return result;
+  return node;
 });

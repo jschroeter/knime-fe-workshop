@@ -16,7 +16,7 @@ defineProps<{
     ]"
   >
     <div class="card">
-      <div class="face front" />
+      <div class="face front"></div>
       <div class="face back">
         <span>{{ letter }}</span>
       </div>
@@ -31,18 +31,34 @@ defineProps<{
   height: 72px;
   display: inline-block;
   margin: 4px;
-}
 
-.card {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.25, 1.5, 0.5, 1);
-}
+  /* bottom shadow */
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    height: 5px;
+    width: 100%;
+    background-color: hsl(12, 4.2%, 23.3%);
+  }
 
-.letter.flipped .card {
-  transform: rotateY(180deg);
+  &.transparent,
+  &.transparent::after {
+    opacity: 0;
+  }
+
+  & .card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.25, 1.5, 0.5, 1);
+  }
+
+  &.flipped .card {
+    transform: rotateY(180deg);
+  }
 }
 
 .face {
@@ -54,7 +70,6 @@ defineProps<{
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: Helvetica, Arial, sans-serif;
   font-size: 2.4em;
   font-weight: 800;
   text-transform: uppercase;
@@ -63,32 +78,16 @@ defineProps<{
     color 0.3s ease;
   text-shadow: 1px 2px 0px white;
   letter-spacing: 1px;
-}
 
-.front {
-  background-color: var(--knime-yellow);
-  color: transparent;
-}
+  &.front {
+    background-color: var(--knime-yellow);
+    color: transparent;
+  }
 
-.back {
-  background-color: var(--knime-stone-light);
-  color: hsl(12, 4.2%, 23.3%);
-  transform: rotateY(180deg);
-}
-
-/* Optional bottom shadow */
-.letter::after {
-  content: "";
-  position: absolute;
-  bottom: -10px;
-  left: 0;
-  height: 5px;
-  width: 100%;
-  background-color: hsl(12, 4.2%, 23.3%);
-}
-
-.letter.transparent,
-.letter.transparent::after {
-  opacity: 0;
+  &.back {
+    background-color: var(--knime-stone-light);
+    color: hsl(12, 4.2%, 23.3%);
+    transform: rotateY(180deg);
+  }
 }
 </style>
