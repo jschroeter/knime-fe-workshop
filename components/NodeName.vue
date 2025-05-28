@@ -5,7 +5,7 @@ import { Button, ProgressBar } from "@knime/components";
 import knimeTriangle from "@knime/styles/img/KNIME_Triangle.svg?url";
 import party from "party-js";
 import { onKeyStroke } from "@vueuse/core";
-import { useNodeStore } from "../stores/node";
+import { useGameStore } from "../stores/game";
 
 type LetterState = {
   letter: string;
@@ -16,7 +16,7 @@ const props = defineProps<{
   name: string;
 }>();
 
-const nodeStore = useNodeStore();
+const gameStore = useGameStore();
 
 const letterStateMap = ref(new Map<number, LetterState>());
 const playerGuess = ref("");
@@ -87,7 +87,7 @@ const revealAll = (solved = false) => {
   for (const [index, entry] of letterStateMap.value.entries()) {
     letterStateMap.value.set(index, { ...entry, state: "revealed" });
   }
-  nodeStore.addToTrash(nodeStore.node!, solved);
+  gameStore.addToPlayed(gameStore.node!, solved);
 };
 
 const solve = () => {
@@ -103,7 +103,7 @@ const solve = () => {
 
 const nextNode = () => {
   playerGuess.value = "";
-  nodeStore.fetch();
+  gameStore.fetch();
 };
 
 const isSolved = computed(() => {
@@ -212,7 +212,7 @@ onUnmounted(() => {
 
   <menu>
     <span class="score"
-      >Score: {{ nodeStore.score }} - Level {{ nodeStore.level }}</span
+      >Score: {{ gameStore.score }} - Level {{ gameStore.level }}</span
     >
     <Button v-if="!isSolved" compact with-border @click="revealAll(false)">
       No idea, please reveal <kbd>ESC</kbd>

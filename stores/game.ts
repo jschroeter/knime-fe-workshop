@@ -1,17 +1,17 @@
 import { defineStore } from "pinia";
 import type { Node } from "~/shared/types";
 
-type SolvedNode = Node & {
+type PlayedNode = Node & {
   solved: boolean;
 };
 
-export const useNodeStore = defineStore("node", () => {
+export const useGameStore = defineStore("game", () => {
   const node = ref<Node>();
-  const trash = ref<Array<SolvedNode>>([]);
+  const playedNodes = ref<PlayedNode[]>([]);
 
   /** the score is just a sum of correctly guessed nodes */
   const score = computed(() => {
-    return trash.value.reduce((acc, n) => acc + (n.solved ? 1 : 0), 0);
+    return playedNodes.value.reduce((acc, n) => acc + (n.solved ? 1 : 0), 0);
   });
 
   /** level 1 means first 10% of top nodes, level 10 means 100% */
@@ -27,13 +27,13 @@ export const useNodeStore = defineStore("node", () => {
     });
   };
 
-  const addToTrash = (node: Node, solved: boolean) => {
-    trash.value.push({ ...node, solved });
+  const addToPlayed = (node: Node, solved: boolean) => {
+    playedNodes.value.push({ ...node, solved });
   };
 
   return {
-    addToTrash,
-    trashedNodes: trash,
+    addToPlayed,
+    playedNodes,
     node,
     fetch,
     score,

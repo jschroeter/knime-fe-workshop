@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import { Pill } from "@knime/components";
 
-const nodeStore = useNodeStore();
+const gameStore = useGameStore();
 </script>
 
 <template>
-  <div class="trashed-nodes">
+  <div class="played-nodes">
     <Pill
-      v-for="trashedNode in nodeStore.trashedNodes"
-      :key="trashedNode.id"
-      :variant="trashedNode.solved ? 'light' : 'error'"
+      v-for="playedNode in gameStore.playedNodes"
+      :key="playedNode.id"
+      :variant="playedNode.solved ? 'light' : 'error'"
     >
-      <NuxtLink external target="_blank" :href="trashedNode.url">{{
-        trashedNode.title
+      <NuxtLink external target="_blank" :href="playedNode.url">{{
+        playedNode.title
       }}</NuxtLink></Pill
     >
   </div>
 </template>
 
 <style scoped>
-.trashed-nodes {
+.played-nodes {
   padding: 20px 0;
   flex: 0 0 100%;
   display: flex;

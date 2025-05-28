@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useNodeStore } from "~/stores/node";
+import { useGameStore } from "~/stores/game";
 
-const nodeStore = useNodeStore();
-await useAsyncData("randomNode", () => nodeStore.fetch());
+const gameStore = useGameStore();
+const node = computed(() => gameStore.node);
 
-const node = computed(() => nodeStore.node);
+await useAsyncData(gameStore.fetch);
 </script>
 
 <template>

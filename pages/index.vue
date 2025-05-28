@@ -6,28 +6,25 @@ const navigation = [
     id: 1,
     to: "/game",
     label: "Start Game",
-    style: { primary: true },
+    primary: true,
   },
   {
     id: 2,
     to: "/",
     label: "Options",
     disabled: true,
-    style: { "with-border": true },
   },
   {
     id: 3,
     to: "/",
     label: "Extras",
     disabled: true,
-    style: { "with-border": true },
   },
   {
     id: 4,
     to: "/",
     label: "Credits",
     disabled: true,
-    style: { "with-border": true },
   },
 ];
 </script>
@@ -46,7 +43,8 @@ const navigation = [
         v-for="item in navigation"
         :key="item.id"
         :to="item.to"
-        v-bind="item.style"
+        :primary="item.primary"
+        :with-border="!item.primary"
         :disabled="item.disabled"
         >{{ item.label }}</Button
       >
