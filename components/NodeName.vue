@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import isWhiteSpace from "../utils/isWhiteSpace";
-import { Button, ProgressBar } from "@knime/components";
+import isSpecialCharacter from "../utils/isSpecialCharacter";
+import { Button, ProgressBar, InputField } from "@knime/components";
 
-import { onKeyStroke } from "@vueuse/core";
+import { onStartTyping } from "@vueuse/core";
 import { useGameStore } from "../stores/game";
 
 type LetterState = {
   letter: string;
-  state: "hidden" | "revealed";
+  state: "hidden" | "revealed" | "special";
 };
 
 const props = defineProps<{
@@ -30,14 +31,21 @@ const letterAndState = computed(() => {
   );
 });
 
+const getLetterState = (letter: string): LetterState => {
+  switch (true) {
+    case isWhiteSpace(letter):
+      return { letter, state: "revealed" };
+    case isSpecialCharacter(letter):
+      return { letter, state: "special" };
+    default:
+      return { letter, state: "hidden" };
+  }
+};
 const initializeLetterStateMap = () => {
   letterStateMap.value.clear();
 
   props.name.split("").forEach((letter, index) => {
-    letterStateMap.value.set(index, {
-      letter,
-      state: isWhiteSpace(letter) ? "revealed" : "hidden",
-    });
+    letterStateMap.value.set(index, getLetterState(letter));
   });
 };
 
@@ -92,7 +100,6 @@ const revealAll = (solved = false) => {
 
 const solve = () => {
   useParty().sparkles();
-
   stopRevealInterval();
 };
 
@@ -103,26 +110,27 @@ const nextNode = () => {
 
 const isSolved = computed(() => {
   return Array.from(letterStateMap.value.values()).every(
-    (entry) => entry.state === "revealed",
+    (entry) => entry.state === "revealed" || entry.state === "special",
   );
 });
 
-watch(playerGuess, (newPlayerGuess) => {
-  const answer = newPlayerGuess.replace(/\s+/g, "").toLowerCase();
-  const expected = props.name.replace(/\s+/g, "").toLowerCase();
+const normalize = (str: string) => str.replace(/[^a-z]/gi, "").toLowerCase();
+const isGuessCorrect = (guess: string, actual: string) =>
+  normalize(guess) === normalize(actual);
 
-  if (answer === expected) {
+watch(playerGuess, (newPlayerGuess) => {
+  if (isGuessCorrect(newPlayerGuess, props.name)) {
     solve();
     revealAll(true);
   }
+  revealCorrectLetters();
 });
 
 const revealCorrectLetters = () => {
-  // TODO ignore whitespaces (and ideally all non-alphabetical characters?), it shouldn't matter if the user types them or not
+  if (playerGuess.value.length === 0) return;
+
   const guess = playerGuess.value.toLowerCase();
   const name = props.name.toLowerCase();
-
-  if (guess.length === 0) return;
 
   letterStateMap.value.forEach((entry, index) => {
     if (
@@ -135,33 +143,11 @@ const revealCorrectLetters = () => {
   });
 };
 
-const onUserKeyStroke = (e) => {
-  if (isSolved.value) {
-    if (e.key === "Enter") {
-      nextNode();
-    }
-    return;
+const input = ref<(HTMLInputElement & { active: boolean }) | null>(null);
+const onTyping = () => {
+  if (!input.value?.active) {
+    input.value?.focus();
   }
-
-  if (e.key === "Escape") {
-    if (!isSolved.value) {
-      revealAll();
-      return;
-    }
-  }
-
-  if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
-  if (e.key.length > 1 && e.key !== "Backspace") return;
-
-  e.preventDefault();
-
-  if (e.key === "Backspace") {
-    playerGuess.value = playerGuess.value.slice(0, -1);
-  } else {
-    playerGuess.value += e.key;
-  }
-
-  revealCorrectLetters();
 };
 
 watch(
@@ -181,7 +167,7 @@ onMounted(() => {
     { immediate: true },
   );
 
-  onKeyStroke(onUserKeyStroke);
+  onStartTyping(onTyping);
 });
 
 onUnmounted(() => {
@@ -201,10 +187,9 @@ onUnmounted(() => {
     />
   </div>
 
-  <div class="hint">
-    Just start typing the name of the node
-    <span>{{ isSolved ? name : playerGuess }}</span>
-  </div>
+  <div class="hint">Just start typing the name of the node</div>
+
+  <InputField ref="input" v-model="playerGuess" type="text" />
 
   <menu>
     <!-- TODO instead of score, give 1 point for each correctly guessed character? -->
@@ -244,11 +229,10 @@ onUnmounted(() => {
   border-left-width: 2px;
   border-left-style: solid;
   padding: 10px;
+}
 
-  & span {
-    font-weight: bold;
-    color: var(--knime-masala);
-  }
+.input-wrapper {
+  margin-bottom: 20px;
 }
 
 menu {

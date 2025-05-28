@@ -3,7 +3,7 @@ import isWhiteSpace from "../utils/isWhiteSpace";
 
 defineProps<{
   letter: string;
-  state: "hidden" | "revealed";
+  state: "hidden" | "revealed" | "special";
 }>();
 </script>
 
@@ -12,7 +12,11 @@ defineProps<{
     class="letter"
     :class="[
       state,
-      { flipped: state === 'revealed', transparent: isWhiteSpace(letter) },
+      {
+        flipped: state === 'revealed' || state === 'special',
+        transparent: isWhiteSpace(letter),
+        special: state === 'special',
+      },
     ]"
   >
     <div class="card">
@@ -40,7 +44,7 @@ defineProps<{
     left: 0;
     height: 5px;
     width: 100%;
-    background-color: hsl(12, 4.2%, 23.3%);
+    background-color: var(--knime-masala);
   }
 
   &.transparent,
@@ -59,35 +63,42 @@ defineProps<{
   &.flipped .card {
     transform: rotateY(180deg);
   }
-}
 
-.face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.4em;
-  font-weight: 800;
-  text-transform: uppercase;
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
-  text-shadow: 1px 2px 0px white;
-  letter-spacing: 1px;
+  & .face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.4em;
+    font-weight: 800;
+    text-transform: uppercase;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+    text-shadow: 1px 2px 0px white;
+    letter-spacing: 1px;
 
-  &.front {
-    background-color: var(--knime-yellow);
-    color: transparent;
+    &.front {
+      background-color: var(--knime-yellow);
+      color: transparent;
+    }
+
+    &.back {
+      background-color: var(--knime-stone-light);
+      color: hsl(12, 4.2%, 23.3%);
+      transform: rotateY(180deg);
+    }
   }
 
-  &.back {
-    background-color: var(--knime-stone-light);
-    color: hsl(12, 4.2%, 23.3%);
-    transform: rotateY(180deg);
+  &.special {
+    & .face.back {
+      background-color: var(--knime-porcelain);
+      color: var(--knime-silver-sand);
+    }
   }
 }
 </style>
