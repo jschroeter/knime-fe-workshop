@@ -3,7 +3,8 @@ import isWhiteSpace from "../utils/isWhiteSpace";
 
 defineProps<{
   letter: string;
-  state: "hidden" | "revealed" | "special";
+  state: "hidden" | "special" | "revealed" | "solved";
+  focused?: boolean;
 }>();
 </script>
 
@@ -13,9 +14,11 @@ defineProps<{
     :class="[
       state,
       {
-        flipped: state === 'revealed' || state === 'special',
+        flipped:
+          state === 'revealed' || state === 'solved' || state === 'special',
         transparent: isWhiteSpace(letter),
         special: state === 'special',
+        focused: focused,
       },
     ]"
   >
@@ -99,6 +102,27 @@ defineProps<{
       background-color: var(--knime-porcelain);
       color: var(--knime-silver-sand);
     }
+  }
+
+  &.focused {
+    transform: scale(1.3);
+
+    &::after {
+      background-color: var(--knime-yellow);
+    }
+
+    & .face.front {
+      animation: flash-bg 0.4s infinite alternate;
+    }
+  }
+}
+
+@keyframes flash-bg {
+  from {
+    background-color: var(--knime-white);
+  }
+  to {
+    background-color: var(--knime-yellow);
   }
 }
 </style>

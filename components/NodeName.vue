@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { onMounted, useTemplateRef } from "vue";
+import { onMounted } from "vue";
 import isWhiteSpace from "../utils/isWhiteSpace";
 import isSpecialCharacter from "../utils/isSpecialCharacter";
-import { Button, ProgressBar, InputField } from "@knime/components";
+import { Button, ProgressBar } from "@knime/components";
 
-import { onStartTyping } from "@vueuse/core";
+import { onKeyStroke } from "@vueuse/core";
 import { useGameStore } from "../stores/game";
 
 type LetterState = {
   letter: string;
-  state: "hidden" | "revealed" | "special";
+  state: "hidden" | "special" | "revealed" | "solved";
 };
 
 const props = defineProps<{
@@ -19,7 +19,6 @@ const props = defineProps<{
 const gameStore = useGameStore();
 
 const letterStateMap = ref(new Map<number, LetterState>());
-const playerGuess = ref("");
 
 const letterAndState = computed(() => {
   return Array.from(letterStateMap.value.entries()).map(
@@ -29,6 +28,19 @@ const letterAndState = computed(() => {
       state,
     }),
   );
+});
+
+const nextHiddenLetterIndex = computed(() => {
+  return letterAndState.value.findIndex((entry) => entry.state === "hidden");
+});
+
+const nextHiddenLetter = computed(() => {
+  return letterAndState.value[nextHiddenLetterIndex.value];
+});
+
+const numberOfSolvedLetters = computed(() => {
+  return letterAndState.value.filter((entry) => entry.state === "solved")
+    .length;
 });
 
 const getLetterState = (letter: string): LetterState => {
@@ -52,7 +64,7 @@ const initializeLetterStateMap = () => {
 let revealInterval: ReturnType<typeof setInterval> | undefined;
 const revealTime = 3 * 1000;
 
-// TODO pause the interval when the user is typing
+// TODO pause the interval while the user is typing
 const startRevealInterval = () => {
   stopRevealInterval();
   revealInterval = setInterval(() => {
@@ -77,11 +89,13 @@ const startRevealInterval = () => {
 
 const percentage = computed(() => {
   const totalLetters = letterStateMap.value.size;
-  const revealedLetters = Array.from(letterStateMap.value.values()).filter(
-    (entry) => entry.state === "revealed",
+  const hiddenLetters = Array.from(letterStateMap.value.values()).filter(
+    (entry) => entry.state === "hidden",
   ).length;
 
-  return totalLetters > 0 ? (revealedLetters / totalLetters) * 100 : 0;
+  return totalLetters > 0
+    ? ((totalLetters - hiddenLetters) / totalLetters) * 100
+    : 0;
 });
 
 const stopRevealInterval = () => {
@@ -91,63 +105,73 @@ const stopRevealInterval = () => {
   }
 };
 
-const revealAll = (solved = false) => {
-  for (const [index, entry] of letterStateMap.value.entries()) {
-    letterStateMap.value.set(index, { ...entry, state: "revealed" });
+const end = () => {
+  const solvedLetters = numberOfSolvedLetters.value;
+  const solvedAtLeastOneLetter = solvedLetters > 0;
+  if (solvedAtLeastOneLetter) {
+    useParty().sparkles(solvedLetters);
   }
-  gameStore.addToPlayed(gameStore.node!, solved);
-};
 
-const solve = () => {
-  useParty().sparkles();
+  gameStore.addToPlayed(gameStore.node!, solvedAtLeastOneLetter);
+
   stopRevealInterval();
 };
 
 const nextNode = () => {
-  playerGuess.value = "";
   gameStore.fetch();
 };
 
 const isSolved = computed(() => {
-  return Array.from(letterStateMap.value.values()).every(
-    (entry) => entry.state === "revealed" || entry.state === "special",
+  return !Array.from(letterStateMap.value.values()).find(
+    (entry) => entry.state === "hidden",
   );
 });
 
-const normalize = (str: string) => str.replace(/[^a-z]/gi, "").toLowerCase();
-const isGuessCorrect = (guess: string, actual: string) =>
-  normalize(guess) === normalize(actual);
-
-watch(playerGuess, (newPlayerGuess) => {
-  if (isGuessCorrect(newPlayerGuess, props.name)) {
-    solve();
-    revealAll(true);
+watch(isSolved, (newIsSolved) => {
+  if (newIsSolved) {
+    end();
   }
-  revealCorrectLetters();
 });
 
-const revealCorrectLetters = () => {
-  if (playerGuess.value.length === 0) return;
+const revealIfCorrectLetter = (guessedLetter: string) => {
+  guessedLetter = guessedLetter.toLowerCase();
+  const actualLetterObject = nextHiddenLetter.value;
+  const actualLetter = actualLetterObject.letter.toLowerCase();
 
-  const guess = playerGuess.value.toLowerCase();
-  const name = props.name.toLowerCase();
+  if (guessedLetter === actualLetter) {
+    letterStateMap.value.set(actualLetterObject.index, {
+      ...actualLetterObject,
+      state: "solved",
+    });
+    gameStore.addPoint();
+  }
+};
 
-  letterStateMap.value.forEach((entry, index) => {
-    if (
-      entry.state === "hidden" &&
-      guess[index] &&
-      guess[index] === name[index]
-    ) {
-      letterStateMap.value.set(index, { ...entry, state: "revealed" });
-    }
+const revealNextHiddenLetter = () => {
+  const nextHiddenLetterObject = nextHiddenLetter.value;
+
+  letterStateMap.value.set(nextHiddenLetterObject.index, {
+    ...nextHiddenLetterObject,
+    state: "revealed",
   });
 };
 
-const input = useTemplateRef("input");
-const onTyping = () => {
-  if (!input.value?.active) {
-    input.value?.focus();
+const onUserKeyStroke = (e: KeyboardEvent) => {
+  if (isSolved.value) {
+    if (e.key === "Enter") {
+      nextNode();
+    }
+    return;
   }
+
+  if (e.key === "Enter") {
+    revealNextHiddenLetter();
+    return;
+  }
+
+  if (e.key.length > 1) return;
+
+  revealIfCorrectLetter(e.key);
 };
 
 watch(
@@ -167,7 +191,7 @@ onMounted(() => {
     { immediate: true },
   );
 
-  onStartTyping(onTyping);
+  onKeyStroke(onUserKeyStroke);
 });
 
 onUnmounted(() => {
@@ -184,23 +208,21 @@ onUnmounted(() => {
       :key="`${index}-${letter}`"
       :letter="letter"
       :state="state"
+      :focused="nextHiddenLetterIndex === index"
     />
   </div>
 
-  <InputField
-    ref="input"
-    v-model="playerGuess"
-    type="text"
-    placeholder="Just start typing the name of the node…"
-  />
-
   <menu>
-    <!-- TODO instead of score, give 1 point for each correctly guessed character? -->
-    <span class="score"
-      >Score: {{ gameStore.score }} - Level {{ gameStore.level }}</span
+    <span class="points"
+      >Points: {{ gameStore.points }} - Level {{ gameStore.level }}</span
     >
-    <Button v-if="!isSolved" compact with-border @click="revealAll(false)">
-      No idea, please reveal <kbd>ESC</kbd>
+    <Button
+      v-if="!isSolved"
+      compact
+      with-border
+      @click="revealNextHiddenLetter()"
+    >
+      No idea, please help <kbd>Enter</kbd>
     </Button>
     <Button v-else compact primary @click="nextNode">
       Next node <kbd>Enter</kbd>
@@ -234,7 +256,7 @@ menu {
   margin: 0;
   padding-inline-start: 0;
 
-  & .score {
+  & .points {
     font-size: 18px;
     color: var(--knime-masala);
     font-weight: 800;

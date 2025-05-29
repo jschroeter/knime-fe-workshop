@@ -8,6 +8,7 @@ type PlayedNode = Node & {
 export const useGameStore = defineStore("game", () => {
   const node = ref<Node>();
   const playedNodes = ref<PlayedNode[]>([]);
+  const points = ref(0);
 
   /** the score is just a sum of correctly guessed nodes */
   const score = computed(() => {
@@ -31,11 +32,17 @@ export const useGameStore = defineStore("game", () => {
     playedNodes.value.push({ ...node, solved });
   };
 
+  const addPoint = () => {
+    points.value += 1;
+  };
+
   return {
     addToPlayed,
     playedNodes,
     node,
     fetch,
+    points,
+    addPoint,
     score,
     level,
   };
