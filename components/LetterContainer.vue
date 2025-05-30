@@ -112,17 +112,17 @@ defineProps<{
     }
 
     & .face.front {
-      animation: flash-bg 0.4s infinite alternate;
+      animation: pulse 0.4s infinite alternate;
     }
   }
 }
 
-@keyframes flash-bg {
-  from {
-    background-color: var(--knime-white);
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
   }
-  to {
-    background-color: var(--knime-yellow);
+  100% {
+    opacity: 1;
   }
 }
 </style>

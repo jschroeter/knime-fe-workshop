@@ -3,18 +3,19 @@ import { onMounted } from "vue";
 
 import { Button, ProgressBar } from "@knime/components";
 
-import { onKeyStroke } from "@vueuse/core";
-import { useGameStore } from "~/stores/game";
-import { useLetterState } from "~/composables/useLetterState";
-import { useReveal } from "~/composables/useReveal";
+import { onKeyStroke, promiseTimeout } from "@vueuse/core";
+import { useGameStore } from "../stores/game";
+import { useLetterState } from "~/composable/useLetterState";
+import { useReveal } from "~/composable/useReveal";
 
 const props = defineProps<{
   name: string;
 }>();
 
+const name = computed(() => props.name);
+
 const gameStore = useGameStore();
 
-const name = computed(() => props.name);
 const {
   hiddenEntries,
   letterAndState,
@@ -25,28 +26,17 @@ const {
   updateLetterState,
 } = useLetterState({ name });
 
-const {
-  startRevealInterval,
-  stopRevealInterval,
-  revealIfCorrectLetter,
-  revealNextHiddenLetter,
-} = useReveal({
+const userIsTyping = ref(false);
+const typingPauseDuration = 300;
+
+const { revealIfCorrectLetter, revealNextHiddenLetter } = useReveal({
+  name,
+  isSolved,
   hiddenEntries,
+  userIsTyping,
   addPoint: gameStore.addPoint,
   updateLetterState,
 });
-
-const end = () => {
-  const solvedLetters = numberOfSolvedLetters.value;
-  const solvedAtLeastOneLetter = solvedLetters > 0;
-  if (solvedAtLeastOneLetter) {
-    useParty().sparkles(solvedLetters);
-  }
-
-  gameStore.addToPlayed(gameStore.node!, solvedAtLeastOneLetter);
-
-  stopRevealInterval();
-};
 
 const nextNode = () => {
   gameStore.fetchRandomNode();
@@ -54,11 +44,24 @@ const nextNode = () => {
 
 watch(isSolved, (newIsSolved) => {
   if (newIsSolved) {
-    end();
+    const solvedLetters = numberOfSolvedLetters.value;
+    const solvedAtLeastOneLetter = solvedLetters > 0;
+    if (solvedAtLeastOneLetter) {
+      useParty().sparkles(solvedLetters);
+    }
+    gameStore.addToPlayed(gameStore.node!, solvedAtLeastOneLetter);
   }
 });
 
-const onUserKeyStroke = (e: KeyboardEvent) => {
+const handleUserIsTyping = async () => {
+  userIsTyping.value = true;
+  await promiseTimeout(typingPauseDuration);
+  userIsTyping.value = false;
+};
+
+const onUserInput = (e: KeyboardEvent) => {
+  handleUserIsTyping();
+
   if (isSolved.value) {
     if (e.key === "Enter") {
       nextNode();
@@ -77,19 +80,7 @@ const onUserKeyStroke = (e: KeyboardEvent) => {
 };
 
 onMounted(() => {
-  watch(
-    () => props.name,
-    () => {
-      startRevealInterval();
-    },
-    { immediate: true },
-  );
-
-  onKeyStroke(onUserKeyStroke);
-});
-
-onUnmounted(() => {
-  stopRevealInterval();
+  onKeyStroke(onUserInput);
 });
 </script>
 
