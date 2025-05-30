@@ -6,6 +6,7 @@ import { Button, ProgressBar } from "@knime/components";
 import { onKeyStroke } from "@vueuse/core";
 import { useGameStore } from "../stores/game";
 import { useLetterState } from "~/composable/useLetterState";
+import { useReveal } from "~/composable/useReveal";
 
 const props = defineProps<{
   name: string;
@@ -17,54 +18,21 @@ const {
   letterStateMap,
   letterAndState,
   nextHiddenLetter,
-  nextHiddenLetterIndex,
   numberOfSolvedLetters,
   initializeLetterStateMap,
+  isSolved,
+  percentage,
 } = useLetterState({ name: props.name });
 
-let revealInterval: ReturnType<typeof setInterval> | undefined;
-const revealTime = 3 * 1000;
-
-// TODO pause the interval while the user is typing
-const startRevealInterval = () => {
-  stopRevealInterval();
-  revealInterval = setInterval(() => {
-    const hiddenEntries = Array.from(letterStateMap.value.entries()).filter(
-      ([_, value]) => value.state === "hidden",
-    );
-
-    if (hiddenEntries.length === 0) {
-      clearInterval(revealInterval);
-      return;
-    }
-
-    const [randomIndex, entry] =
-      hiddenEntries[Math.floor(Math.random() * hiddenEntries.length)];
-
-    letterStateMap.value.set(randomIndex, {
-      ...entry,
-      state: "revealed",
-    });
-  }, revealTime);
-};
-
-const percentage = computed(() => {
-  const totalLetters = letterStateMap.value.size;
-  const hiddenLetters = Array.from(letterStateMap.value.values()).filter(
-    (entry) => entry.state === "hidden",
-  ).length;
-
-  return totalLetters > 0
-    ? ((totalLetters - hiddenLetters) / totalLetters) * 100
-    : 0;
+const {
+  startRevealInterval,
+  stopRevealInterval,
+  revealIfCorrectLetter,
+  revealNextHiddenLetter,
+} = useReveal({
+  letterStateMap,
+  gameStore,
 });
-
-const stopRevealInterval = () => {
-  if (revealInterval) {
-    clearInterval(revealInterval);
-    revealInterval = undefined;
-  }
-};
 
 const end = () => {
   const solvedLetters = numberOfSolvedLetters.value;
@@ -82,40 +50,11 @@ const nextNode = () => {
   gameStore.fetch();
 };
 
-const isSolved = computed(() => {
-  return !Array.from(letterStateMap.value.values()).find(
-    (entry) => entry.state === "hidden",
-  );
-});
-
 watch(isSolved, (newIsSolved) => {
   if (newIsSolved) {
     end();
   }
 });
-
-const revealIfCorrectLetter = (guessedLetter: string) => {
-  guessedLetter = guessedLetter.toLowerCase();
-  const actualLetterObject = nextHiddenLetter.value;
-  const actualLetter = actualLetterObject.letter.toLowerCase();
-
-  if (guessedLetter === actualLetter) {
-    letterStateMap.value.set(actualLetterObject.index, {
-      ...actualLetterObject,
-      state: "solved",
-    });
-    gameStore.addPoint();
-  }
-};
-
-const revealNextHiddenLetter = () => {
-  const nextHiddenLetterObject = nextHiddenLetter.value;
-
-  letterStateMap.value.set(nextHiddenLetterObject.index, {
-    ...nextHiddenLetterObject,
-    state: "revealed",
-  });
-};
 
 const onUserKeyStroke = (e: KeyboardEvent) => {
   if (isSolved.value) {
@@ -126,13 +65,13 @@ const onUserKeyStroke = (e: KeyboardEvent) => {
   }
 
   if (e.key === "Enter") {
-    revealNextHiddenLetter();
+    revealNextHiddenLetter(nextHiddenLetter.value);
     return;
   }
 
   if (e.key.length > 1) return;
 
-  revealIfCorrectLetter(e.key);
+  revealIfCorrectLetter(e.key, nextHiddenLetter.value);
 };
 
 watch(
@@ -181,7 +120,7 @@ onUnmounted(() => {
       v-if="!isSolved"
       compact
       with-border
-      @click="revealNextHiddenLetter()"
+      @click="revealNextHiddenLetter(nextHiddenLetter)"
     >
       No idea, please help <kbd>Enter</kbd>
     </Button>

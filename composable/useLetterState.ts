@@ -1,10 +1,20 @@
 import isWhiteSpace from "../utils/isWhiteSpace";
 import isSpecialCharacter from "../utils/isSpecialCharacter";
 
+type State = "hidden" | "special" | "revealed" | "solved";
+
 export type LetterState = {
   letter: string;
-  state: "hidden" | "special" | "revealed" | "solved";
+  state: State;
 };
+
+export type HiddenLetter =
+  | {
+      index: number;
+      letter: string;
+      state: State;
+    }
+  | undefined;
 
 export const useLetterState = ({ name }: { name: string }) => {
   const letterStateMap = ref(new Map<number, LetterState>());
@@ -38,13 +48,31 @@ export const useLetterState = ({ name }: { name: string }) => {
     ),
   );
 
-  const nextHiddenLetter = computed(() => {
-    return letterAndState.value.find((entry) => entry.state === "hidden");
-  });
+  const nextHiddenLetter = computed(() =>
+    letterAndState.value.find((entry) => entry.state === "hidden"),
+  ) as Ref<HiddenLetter>;
 
-  const numberOfSolvedLetters = computed(() => {
-    return letterAndState.value.filter((entry) => entry.state === "solved")
-      .length;
+  const numberOfSolvedLetters = computed(
+    () =>
+      letterAndState.value.filter((entry) => entry.state === "solved").length,
+  );
+
+  const isSolved = computed(
+    () =>
+      !Array.from(letterStateMap.value.values()).find(
+        (entry) => entry.state === "hidden",
+      ),
+  );
+
+  const percentage = computed(() => {
+    const totalLetters = letterStateMap.value.size;
+    const hiddenLetters = Array.from(letterStateMap.value.values()).filter(
+      (entry) => entry.state === "hidden",
+    ).length;
+
+    return totalLetters > 0
+      ? ((totalLetters - hiddenLetters) / totalLetters) * 100
+      : 0;
   });
 
   initializeLetterStateMap({ name });
@@ -55,5 +83,7 @@ export const useLetterState = ({ name }: { name: string }) => {
     numberOfSolvedLetters,
     nextHiddenLetter,
     initializeLetterStateMap,
+    isSolved,
+    percentage,
   };
 };
