@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
-import isWhiteSpace from "../utils/isWhiteSpace";
-import isSpecialCharacter from "../utils/isSpecialCharacter";
+
 import { Button, ProgressBar } from "@knime/components";
 
 import { onKeyStroke } from "@vueuse/core";
 import { useGameStore } from "../stores/game";
-
-type LetterState = {
-  letter: string;
-  state: "hidden" | "special" | "revealed" | "solved";
-};
+import { useLetterState } from "~/composable/useLetterState";
 
 const props = defineProps<{
   name: string;
@@ -18,48 +13,14 @@ const props = defineProps<{
 
 const gameStore = useGameStore();
 
-const letterStateMap = ref(new Map<number, LetterState>());
-
-const letterAndState = computed(() => {
-  return Array.from(letterStateMap.value.entries()).map(
-    ([index, { letter, state }]) => ({
-      index,
-      letter,
-      state,
-    }),
-  );
-});
-
-const nextHiddenLetterIndex = computed(() => {
-  return letterAndState.value.findIndex((entry) => entry.state === "hidden");
-});
-
-const nextHiddenLetter = computed(() => {
-  return letterAndState.value[nextHiddenLetterIndex.value];
-});
-
-const numberOfSolvedLetters = computed(() => {
-  return letterAndState.value.filter((entry) => entry.state === "solved")
-    .length;
-});
-
-const getLetterState = (letter: string): LetterState => {
-  switch (true) {
-    case isWhiteSpace(letter):
-      return { letter, state: "revealed" };
-    case isSpecialCharacter(letter):
-      return { letter, state: "special" };
-    default:
-      return { letter, state: "hidden" };
-  }
-};
-const initializeLetterStateMap = () => {
-  letterStateMap.value.clear();
-
-  props.name.split("").forEach((letter, index) => {
-    letterStateMap.value.set(index, getLetterState(letter));
-  });
-};
+const {
+  letterStateMap,
+  letterAndState,
+  nextHiddenLetter,
+  nextHiddenLetterIndex,
+  numberOfSolvedLetters,
+  initializeLetterStateMap,
+} = useLetterState({ name: props.name });
 
 let revealInterval: ReturnType<typeof setInterval> | undefined;
 const revealTime = 3 * 1000;
@@ -176,8 +137,8 @@ const onUserKeyStroke = (e: KeyboardEvent) => {
 
 watch(
   () => props.name,
-  () => {
-    initializeLetterStateMap();
+  (newName: string) => {
+    initializeLetterStateMap({ name: newName });
   },
   { immediate: true },
 );
