@@ -32,11 +32,14 @@ export const useReveal = ({
 
   let pause: () => void = () => {};
   let resume: () => void = () => {};
+  let isActive = ref(false);
 
   const startRevealInterval = () => {
-    pause();
+    if (isActive.value) {
+      return;
+    }
 
-    ({ pause, resume } = useIntervalFn(() => {
+    ({ pause, resume, isActive } = useIntervalFn(() => {
       if (hiddenEntries.value.length === 0) {
         pause();
         return;
@@ -101,8 +104,12 @@ export const useReveal = ({
 
   watch(
     isSolved,
-    () => {
-      pause();
+    (newIsSolved) => {
+      if (newIsSolved) {
+        pause();
+      } else {
+        resume();
+      }
     },
     { immediate: true },
   );

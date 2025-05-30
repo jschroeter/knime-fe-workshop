@@ -3,10 +3,10 @@ import { onMounted } from "vue";
 
 import { Button, ProgressBar } from "@knime/components";
 
-import { onKeyStroke, promiseTimeout } from "@vueuse/core";
+import { onKeyStroke, refAutoReset } from "@vueuse/core";
 import { useGameStore } from "../stores/game";
-import { useLetterState } from "~/composable/useLetterState";
-import { useReveal } from "~/composable/useReveal";
+import { useLetterState } from "~/composables/useLetterState";
+import { useReveal } from "~/composables/useReveal";
 
 const props = defineProps<{
   name: string;
@@ -26,8 +26,8 @@ const {
   updateLetterState,
 } = useLetterState({ name });
 
-const userIsTyping = ref(false);
 const typingPauseDuration = 300;
+const userIsTyping = refAutoReset(false, typingPauseDuration);
 
 const { revealIfCorrectLetter, revealNextHiddenLetter } = useReveal({
   name,
@@ -53,14 +53,8 @@ watch(isSolved, (newIsSolved) => {
   }
 });
 
-const handleUserIsTyping = async () => {
-  userIsTyping.value = true;
-  await promiseTimeout(typingPauseDuration);
-  userIsTyping.value = false;
-};
-
 const onUserInput = (e: KeyboardEvent) => {
-  handleUserIsTyping();
+  userIsTyping.value = true; // will auto-reset
 
   if (isSolved.value) {
     if (e.key === "Enter") {
