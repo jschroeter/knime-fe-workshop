@@ -21,7 +21,7 @@ export const fetchTopNodes = async () => {
     const { knimeServiceUser, knimeServicePassword } = useRuntimeConfig(event);
     try {
       const topNodes = await $fetch(
-        "https://api.hubdev.knime.com/deployments/rest:1255437a-2b46-4d70-98df-6e5360c6d34d/raw-execution",
+        "https://api.hub.knime.com/deployments/rest:1255437a-2b46-4d70-98df-6e5360c6d34d/raw-execution",
         {
           query: {
             timeout: 50000,
@@ -29,7 +29,6 @@ export const fetchTopNodes = async () => {
             keepJob: false,
           },
           headers: {
-            Host: "api.hubdev.knime.com",
             Authorization: `Basic ${btoa(
               `${knimeServiceUser}:${knimeServicePassword}`,
             )}`,

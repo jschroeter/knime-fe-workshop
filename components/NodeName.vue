@@ -8,11 +8,15 @@ import { useGameStore } from "../stores/game";
 import { useLetterState } from "~/composables/useLetterState";
 import { useReveal } from "~/composables/useReveal";
 
+const TYPING_PAUSE_DURATION = 300;
+
 const props = defineProps<{
   name: string;
 }>();
 
 const name = computed(() => props.name);
+
+const userIsTyping = refAutoReset(false, TYPING_PAUSE_DURATION);
 
 const gameStore = useGameStore();
 
@@ -26,9 +30,6 @@ const {
   updateLetterState,
 } = useLetterState({ name });
 
-const typingPauseDuration = 300;
-const userIsTyping = refAutoReset(false, typingPauseDuration);
-
 const { revealIfCorrectLetter, revealNextHiddenLetter } = useReveal({
   name,
   isSolved,
@@ -41,17 +42,6 @@ const { revealIfCorrectLetter, revealNextHiddenLetter } = useReveal({
 const nextNode = () => {
   gameStore.fetchRandomNode();
 };
-
-watch(isSolved, (newIsSolved) => {
-  if (newIsSolved) {
-    const solvedLetters = numberOfSolvedLetters.value;
-    const solvedAtLeastOneLetter = solvedLetters > 0;
-    if (solvedAtLeastOneLetter) {
-      useParty().sparkles(solvedLetters);
-    }
-    gameStore.addToPlayed(gameStore.node!, solvedAtLeastOneLetter);
-  }
-});
 
 const onUserInput = (e: KeyboardEvent) => {
   userIsTyping.value = true; // will auto-reset
@@ -75,6 +65,17 @@ const onUserInput = (e: KeyboardEvent) => {
 
 onMounted(() => {
   onKeyStroke(onUserInput);
+});
+
+watch(isSolved, (newIsSolved) => {
+  if (newIsSolved) {
+    const solvedLetters = numberOfSolvedLetters.value;
+    const solvedAtLeastOneLetter = solvedLetters > 0;
+    if (solvedAtLeastOneLetter) {
+      useParty().sparkles(solvedLetters);
+    }
+    gameStore.addToPlayed(gameStore.node!, solvedAtLeastOneLetter);
+  }
 });
 </script>
 

@@ -7,6 +7,8 @@ import {
 
 import { useIntervalFn } from "@vueuse/core";
 
+const AUTO_REVEAL_TIME = 3 * 1000;
+
 export const useReveal = ({
   name,
   isSolved,
@@ -28,8 +30,6 @@ export const useReveal = ({
     newState: State;
   }) => void;
 }) => {
-  const revealTime = 3 * 1000;
-
   let pause: () => void = () => {};
   let resume: () => void = () => {};
   let isActive = ref(false);
@@ -51,7 +51,7 @@ export const useReveal = ({
         ];
 
       updateLetterState({ index: randomIndex, newState: stateMap.revealed });
-    }, revealTime));
+    }, AUTO_REVEAL_TIME));
   };
 
   const revealIfCorrectLetter = (

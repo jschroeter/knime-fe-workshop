@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
+    // during dev, filled from .env file; in production, filled from environment variables
     knimeServiceUser: "",
     knimeServicePassword: "",
     public: {

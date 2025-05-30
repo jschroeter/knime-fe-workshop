@@ -117,7 +117,6 @@ export const useLetterState = ({ name }: { name: Ref<string> }) => {
     letterStateMap,
     numberOfSolvedLetters,
     nextHiddenLetter,
-    initializeLetterStateMap,
     updateLetterState,
     isSolved,
     percentage,
