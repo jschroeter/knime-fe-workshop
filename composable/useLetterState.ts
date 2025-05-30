@@ -58,15 +58,12 @@ export const useLetterState = ({ name }: { name: string }) => {
   );
 
   const isSolved = computed(
-    () =>
-      !Array.from(letterStateMap.value.values()).find(
-        (entry) => entry.state === "hidden",
-      ),
+    () => !letterAndState.value.find((entry) => entry.state === "hidden"),
   );
 
   const percentage = computed(() => {
     const totalLetters = letterStateMap.value.size;
-    const hiddenLetters = Array.from(letterStateMap.value.values()).filter(
+    const hiddenLetters = letterAndState.value.filter(
       (entry) => entry.state === "hidden",
     ).length;
 
