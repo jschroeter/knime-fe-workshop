@@ -1,7 +1,7 @@
 import isWhiteSpace from "../utils/isWhiteSpace";
 import isSpecialCharacter from "../utils/isSpecialCharacter";
 
-type State = "hidden" | "special" | "revealed" | "solved";
+export type State = "hidden" | "special" | "revealed" | "solved";
 
 export type LetterState = {
   letter: string;
@@ -16,7 +16,9 @@ export type HiddenLetter =
     }
   | undefined;
 
-export const useLetterState = ({ name }: { name: string }) => {
+export type HiddenEntry = [number, LetterState];
+
+export const useLetterState = ({ name }: { name: Ref<string> }) => {
   const letterStateMap = ref(new Map<number, LetterState>());
 
   const getLetterState = (letter: string): LetterState => {
@@ -38,6 +40,22 @@ export const useLetterState = ({ name }: { name: string }) => {
     });
   };
 
+  const updateLetterState = ({
+    index,
+    newState,
+  }: {
+    index: number;
+    newState: State;
+  }) => {
+    const currentEntry = letterStateMap.value.get(index);
+    if (currentEntry) {
+      letterStateMap.value.set(index, {
+        ...currentEntry,
+        state: newState,
+      });
+    }
+  };
+
   const letterAndState = computed(() =>
     Array.from(letterStateMap.value.entries()).map(
       ([index, { letter, state }]) => ({
@@ -47,6 +65,12 @@ export const useLetterState = ({ name }: { name: string }) => {
       }),
     ),
   );
+
+  const hiddenEntries = computed(() =>
+    Array.from(letterStateMap.value.entries()).filter(
+      ([_, value]) => value.state === "hidden",
+    ),
+  ) as Ref<HiddenEntry[]>;
 
   const nextHiddenLetter = computed(() =>
     letterAndState.value.find((entry) => entry.state === "hidden"),
@@ -72,7 +96,13 @@ export const useLetterState = ({ name }: { name: string }) => {
       : 0;
   });
 
-  initializeLetterStateMap({ name });
+  watch(
+    name,
+    (newName: string) => {
+      initializeLetterStateMap({ name: newName });
+    },
+    { immediate: true },
+  );
 
   return {
     letterAndState,
@@ -80,7 +110,9 @@ export const useLetterState = ({ name }: { name: string }) => {
     numberOfSolvedLetters,
     nextHiddenLetter,
     initializeLetterStateMap,
+    updateLetterState,
     isSolved,
     percentage,
+    hiddenEntries,
   };
 };

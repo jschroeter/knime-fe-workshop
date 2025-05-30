@@ -14,15 +14,16 @@ const props = defineProps<{
 
 const gameStore = useGameStore();
 
+const name = computed(() => props.name);
 const {
-  letterStateMap,
+  hiddenEntries,
   letterAndState,
   nextHiddenLetter,
   numberOfSolvedLetters,
-  initializeLetterStateMap,
   isSolved,
   percentage,
-} = useLetterState({ name: props.name });
+  updateLetterState,
+} = useLetterState({ name });
 
 const {
   startRevealInterval,
@@ -30,8 +31,9 @@ const {
   revealIfCorrectLetter,
   revealNextHiddenLetter,
 } = useReveal({
-  letterStateMap,
-  gameStore,
+  hiddenEntries,
+  addPoint: gameStore.addPoint,
+  updateLetterState,
 });
 
 const end = () => {
@@ -73,14 +75,6 @@ const onUserKeyStroke = (e: KeyboardEvent) => {
 
   revealIfCorrectLetter(e.key, nextHiddenLetter.value);
 };
-
-watch(
-  () => props.name,
-  (newName: string) => {
-    initializeLetterStateMap({ name: newName });
-  },
-  { immediate: true },
-);
 
 onMounted(() => {
   watch(

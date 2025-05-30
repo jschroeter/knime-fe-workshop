@@ -1,13 +1,19 @@
-import type { HiddenLetter, LetterState } from "./useLetterState";
+import type { HiddenEntry, HiddenLetter, State } from "./useLetterState";
 
 export const useReveal = ({
-  letterStateMap,
-  gameStore,
+  hiddenEntries,
+  updateLetterState,
+  addPoint,
 }: {
-  letterStateMap: Ref<Map<number, LetterState>>;
-  gameStore: {
-    addPoint: () => void;
-  };
+  hiddenEntries: Ref<HiddenEntry[]>;
+  addPoint: () => void;
+  updateLetterState: ({
+    index,
+    newState,
+  }: {
+    index: number;
+    newState: State;
+  }) => void;
 }) => {
   let revealInterval: ReturnType<typeof setInterval> | undefined;
   const revealTime = 3 * 1000;
@@ -22,23 +28,19 @@ export const useReveal = ({
   // TODO pause the interval while the user is typing
   const startRevealInterval = () => {
     stopRevealInterval();
-    revealInterval = setInterval(() => {
-      const hiddenEntries = Array.from(letterStateMap.value.entries()).filter(
-        ([_, value]) => value.state === "hidden",
-      );
 
-      if (hiddenEntries.length === 0) {
+    revealInterval = setInterval(() => {
+      if (hiddenEntries.value.length === 0) {
         clearInterval(revealInterval);
         return;
       }
 
-      const [randomIndex, entry] =
-        hiddenEntries[Math.floor(Math.random() * hiddenEntries.length)];
+      const [randomIndex] =
+        hiddenEntries.value[
+          Math.floor(Math.random() * hiddenEntries.value.length)
+        ];
 
-      letterStateMap.value.set(randomIndex, {
-        ...entry,
-        state: "revealed",
-      });
+      updateLetterState({ index: randomIndex, newState: "revealed" });
     }, revealTime);
   };
 
@@ -55,11 +57,11 @@ export const useReveal = ({
     const actualLetter = actualLetterObject.letter.toLowerCase();
 
     if (guessedLetter === actualLetter) {
-      letterStateMap.value.set(actualLetterObject.index, {
-        ...actualLetterObject,
-        state: "solved",
+      updateLetterState({
+        index: actualLetterObject.index,
+        newState: "solved",
       });
-      gameStore.addPoint();
+      addPoint();
     }
   };
 
@@ -68,9 +70,9 @@ export const useReveal = ({
       return;
     }
 
-    letterStateMap.value.set(nextHiddenLetter.index, {
-      ...nextHiddenLetter,
-      state: "revealed",
+    updateLetterState({
+      index: nextHiddenLetter.index,
+      newState: "revealed",
     });
   };
 
