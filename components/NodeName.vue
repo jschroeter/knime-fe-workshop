@@ -169,7 +169,7 @@ onUnmounted(() => {
       :key="`${index}-${letter}`"
       :letter="letter"
       :state="state"
-      :focused="nextHiddenLetterIndex === index"
+      :focused="nextHiddenLetter?.index === index"
     />
   </div>
 

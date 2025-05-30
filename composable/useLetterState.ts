@@ -38,12 +38,8 @@ export const useLetterState = ({ name }: { name: string }) => {
     ),
   );
 
-  const nextHiddenLetterIndex = computed(() => {
-    return letterAndState.value.findIndex((entry) => entry.state === "hidden");
-  });
-
   const nextHiddenLetter = computed(() => {
-    return letterAndState.value[nextHiddenLetterIndex.value];
+    return letterAndState.value.find((entry) => entry.state === "hidden");
   });
 
   const numberOfSolvedLetters = computed(() => {
@@ -58,7 +54,6 @@ export const useLetterState = ({ name }: { name: string }) => {
     letterStateMap,
     numberOfSolvedLetters,
     nextHiddenLetter,
-    nextHiddenLetterIndex,
     initializeLetterStateMap,
   };
 };
