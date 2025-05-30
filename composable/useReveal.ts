@@ -1,4 +1,9 @@
-import type { HiddenEntry, HiddenLetter, State } from "./useLetterState";
+import {
+  stateMap,
+  type HiddenEntry,
+  type HiddenLetter,
+  type State,
+} from "./useLetterState";
 
 export const useReveal = ({
   hiddenEntries,
@@ -40,7 +45,7 @@ export const useReveal = ({
           Math.floor(Math.random() * hiddenEntries.value.length)
         ];
 
-      updateLetterState({ index: randomIndex, newState: "revealed" });
+      updateLetterState({ index: randomIndex, newState: stateMap.revealed });
     }, revealTime);
   };
 
@@ -59,7 +64,7 @@ export const useReveal = ({
     if (guessedLetter === actualLetter) {
       updateLetterState({
         index: actualLetterObject.index,
-        newState: "solved",
+        newState: stateMap.solved,
       });
       addPoint();
     }
@@ -72,7 +77,7 @@ export const useReveal = ({
 
     updateLetterState({
       index: nextHiddenLetter.index,
-      newState: "revealed",
+      newState: stateMap.revealed,
     });
   };
 

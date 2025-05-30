@@ -1,7 +1,13 @@
 import isWhiteSpace from "../utils/isWhiteSpace";
 import isSpecialCharacter from "../utils/isSpecialCharacter";
 
-export type State = "hidden" | "special" | "revealed" | "solved";
+export const stateMap = Object.freeze({
+  hidden: "hidden",
+  special: "special",
+  revealed: "revealed",
+  solved: "solved",
+});
+export type State = (typeof stateMap)[keyof typeof stateMap];
 
 export type LetterState = {
   letter: string;
@@ -24,11 +30,11 @@ export const useLetterState = ({ name }: { name: Ref<string> }) => {
   const getLetterState = (letter: string): LetterState => {
     switch (true) {
       case isWhiteSpace(letter):
-        return { letter, state: "revealed" };
+        return { letter, state: stateMap.revealed };
       case isSpecialCharacter(letter):
-        return { letter, state: "special" };
+        return { letter, state: stateMap.special };
       default:
-        return { letter, state: "hidden" };
+        return { letter, state: stateMap.hidden };
     }
   };
 
@@ -68,27 +74,29 @@ export const useLetterState = ({ name }: { name: Ref<string> }) => {
 
   const hiddenEntries = computed(() =>
     Array.from(letterStateMap.value.entries()).filter(
-      ([_, value]) => value.state === "hidden",
+      ([_, value]) => value.state === stateMap.hidden,
     ),
   ) as Ref<HiddenEntry[]>;
 
   const nextHiddenLetter = computed(() =>
-    letterAndState.value.find((entry) => entry.state === "hidden"),
+    letterAndState.value.find((entry) => entry.state === stateMap.hidden),
   ) as Ref<HiddenLetter>;
 
   const numberOfSolvedLetters = computed(
     () =>
-      letterAndState.value.filter((entry) => entry.state === "solved").length,
+      letterAndState.value.filter((entry) => entry.state === stateMap.solved)
+        .length,
   );
 
   const isSolved = computed(
-    () => !letterAndState.value.find((entry) => entry.state === "hidden"),
+    () =>
+      !letterAndState.value.find((entry) => entry.state === stateMap.hidden),
   );
 
   const percentage = computed(() => {
     const totalLetters = letterStateMap.value.size;
     const hiddenLetters = letterAndState.value.filter(
-      (entry) => entry.state === "hidden",
+      (entry) => entry.state === stateMap.hidden,
     ).length;
 
     return totalLetters > 0
