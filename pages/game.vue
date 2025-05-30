@@ -4,7 +4,7 @@ import { useGameStore } from "~/stores/game";
 const gameStore = useGameStore();
 const node = computed(() => gameStore.node);
 
-gameStore.fetchRandomNode();
+await useAsyncData(() => gameStore.fetchRandomNode());
 </script>
 
 <template>
