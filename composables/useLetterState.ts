@@ -1,5 +1,5 @@
-import isWhiteSpace from "../utils/isWhiteSpace";
-import isSpecialCharacter from "../utils/isSpecialCharacter";
+import isWhiteSpace from "~/utils/isWhiteSpace";
+import isSpecialCharacter from "~/utils/isSpecialCharacter";
 
 export const stateMap = Object.freeze({
   hidden: "hidden",

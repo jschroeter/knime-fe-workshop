@@ -4,9 +4,9 @@ import { onMounted } from "vue";
 import { Button, ProgressBar } from "@knime/components";
 
 import { onKeyStroke } from "@vueuse/core";
-import { useGameStore } from "../stores/game";
-import { useLetterState } from "~/composable/useLetterState";
-import { useReveal } from "~/composable/useReveal";
+import { useGameStore } from "~/stores/game";
+import { useLetterState } from "~/composables/useLetterState";
+import { useReveal } from "~/composables/useReveal";
 
 const props = defineProps<{
   name: string;
@@ -49,7 +49,7 @@ const end = () => {
 };
 
 const nextNode = () => {
-  gameStore.fetch();
+  gameStore.fetchRandomNode();
 };
 
 watch(isSolved, (newIsSolved) => {

@@ -20,7 +20,7 @@ export const useGameStore = defineStore("game", () => {
     return Math.min(10, Math.floor(score.value / 10) + 1);
   });
 
-  const fetch = async () => {
+  const fetchRandomNode = async () => {
     node.value = await $fetch("/bff/randomNode", {
       query: {
         level: level.value,
@@ -40,7 +40,7 @@ export const useGameStore = defineStore("game", () => {
     addToPlayed,
     playedNodes,
     node,
-    fetch,
+    fetchRandomNode,
     points,
     addPoint,
     score,

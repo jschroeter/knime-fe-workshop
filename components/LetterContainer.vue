@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import isWhiteSpace from "../utils/isWhiteSpace";
+import isWhiteSpace from "~/utils/isWhiteSpace";
 
 defineProps<{
   letter: string;
