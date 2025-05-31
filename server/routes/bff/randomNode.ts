@@ -2,25 +2,10 @@ import type { Node } from "~/shared/types";
 import { fetchTopNodes } from "~/server/api/topNodes";
 import { fetchNode } from "~/server/api/node";
 
-const cachedTopNodes = defineCachedFunction(fetchTopNodes, {
-  maxAge: 24 * 60 * 60 * 1000, // cache for 1 day
-  staleMaxAge: -1, // stale-while-revalidate; re-fetches in background
-  getKey: () => "topNodes",
-});
-
-const cachedNode = defineCachedFunction(
-  async (factoryName: string) => {
-    return await fetchNode(factoryName);
-  },
-  {
-    maxAge: 24 * 60 * 60 * 1000, // cache for 1 day
-    staleMaxAge: -1, // stale-while-revalidate; re-fetches in background
-    getKey: (factoryName) => `node:${factoryName}`,
-  },
-);
+// TODO wrap fetchTopNodes and fetchNode in defineCachedFunctions
 
 export default defineEventHandler(async (event) => {
-  const topNodes = await cachedTopNodes();
+  const topNodes = await fetchTopNodes();
 
   // get "level" from query params, default to 10 if not provided or invalid
   const levelParam = getQuery(event).level;
@@ -38,7 +23,7 @@ export default defineEventHandler(async (event) => {
   while (!node && attempts < 5) {
     const randomIndex = Math.floor(Math.random() * range);
     const randomNodeId = topNodes[randomIndex].nodeId;
-    node = await cachedNode(randomNodeId);
+    node = await fetchNode(randomNodeId);
     attempts++;
   }
 

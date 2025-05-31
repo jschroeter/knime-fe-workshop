@@ -39,15 +39,8 @@ const navigation = [
       true KNIME node master!
     </p>
     <menu>
-      <Button
-        v-for="item in navigation"
-        :key="item.id"
-        :to="item.to"
-        :primary="item.primary"
-        :with-border="!item.primary"
-        :disabled="item.disabled"
-        >{{ item.label }}</Button
-      >
+      <!-- TODO render buttons -->
+      <div v-for="item in navigation" :key="item.id">{{ item.label }}</div>
     </menu>
   </div>
 </template>

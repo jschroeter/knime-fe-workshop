@@ -15,13 +15,11 @@ export const useReveal = ({
   userIsTyping,
   hiddenEntries,
   updateLetterState,
-  addPoint,
 }: {
   name: Ref<string>;
   isSolved: Ref<boolean>;
   userIsTyping: Ref<boolean>;
   hiddenEntries: Ref<HiddenEntry[]>;
-  addPoint: () => void;
   updateLetterState: ({
     index,
     newState,
@@ -71,7 +69,7 @@ export const useReveal = ({
         index: actualLetterObject.index,
         newState: stateMap.solved,
       });
-      addPoint();
+      // TODO add points to the game store
     }
   };
 

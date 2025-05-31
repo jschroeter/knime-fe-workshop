@@ -35,7 +35,6 @@ const { revealIfCorrectLetter, revealNextHiddenLetter } = useReveal({
   isSolved,
   hiddenEntries,
   userIsTyping,
-  addPoint: gameStore.addPoint,
   updateLetterState,
 });
 
@@ -72,7 +71,7 @@ watch(isSolved, (newIsSolved) => {
     const solvedLetters = numberOfSolvedLetters.value;
     const solvedAtLeastOneLetter = solvedLetters > 0;
     if (solvedAtLeastOneLetter) {
-      useParty().sparkles(solvedLetters);
+      // TODO add a nice visual effect to celebrate the win
     }
     gameStore.addToPlayed(gameStore.node!, solvedAtLeastOneLetter);
   }
@@ -93,9 +92,7 @@ watch(isSolved, (newIsSolved) => {
   </div>
 
   <menu>
-    <span class="points"
-      >Points: {{ gameStore.points }} - Level {{ gameStore.level }}</span
-    >
+    <span class="points">Level {{ gameStore.level }}</span>
     <Button
       v-if="!isSolved"
       compact

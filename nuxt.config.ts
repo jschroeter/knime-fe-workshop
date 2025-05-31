@@ -21,9 +21,6 @@ export default defineNuxtConfig({
     },
   },
   routeRules: {
-    // Homepage pre-rendered at build time
-    "/": { prerender: true },
-    // game only client-side rendered
-    "/game": { ssr: false },
+    // TODO define rendering modes; defaults to SSR
   },
 });
