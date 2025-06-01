@@ -1,6 +1,11 @@
-import type { BasicNodeMetaInfo } from "~/server/types";
 import type { Node } from "~/shared/types";
+import type { components } from "~/shared/api/catalogApi.types";
 import type { FetchError } from "ofetch";
+
+/**
+ * use type from auto-generated Hub Catalog OpenAPI types
+ */
+export type BasicNodeMetaInfo = components["schemas"]["BasicNodeMetaInfo"];
 
 /**
  * Fetches details of a single node from KNIME Community Hub, including icon

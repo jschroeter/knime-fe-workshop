@@ -1,6 +1,6 @@
 import type { Node } from "~/shared/types";
-import { fetchTopNodes } from "~/server/api/topNodes";
-import { fetchNode } from "~/server/api/node";
+import { fetchTopNodes } from "~/shared/api/topNodes";
+import { fetchNode } from "~/shared/api/node";
 
 // TODO wrap fetchTopNodes and fetchNode in defineCachedFunctions
 

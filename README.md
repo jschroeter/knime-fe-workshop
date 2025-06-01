@@ -62,7 +62,7 @@ If not, checkout branch `step1`.
 
     `await useAsyncData(() => gameStore.fetchRandomNode());`
 
-- We should exclude deprecated or legacy nodes. Thankfully, we have a BFF and can do that in [server/api/node.ts](./server/api/node.ts). Notice the code completion due to the typed API.
+- We should exclude deprecated or legacy nodes. Thankfully, we have a BFF and can do that in [shared/api/node.ts](./shared/api/node.ts). Notice the code completion due to the typed API.
   Make sure to return `null` so the response will be cached in step 4.
 
 You now should see random nodes and be able to proceed to the next node.
