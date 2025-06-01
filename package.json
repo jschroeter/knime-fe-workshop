@@ -25,7 +25,10 @@
     "eslint": "^9.27.0",
     "prettier": "3.5.3"
   },
+  "overrides": {
+    "v-calendar": "file:./.devcontainer/v-calendar"
+  },
   "engines": {
-    "node": ">=22.0.0"
+    "node": "22.x"
   }
 }

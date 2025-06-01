@@ -13,9 +13,13 @@ This is a little app used for a frontend development workshop.
 
 ## Setup
 
-1. Make sure to have [NodeJS installed](https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation) (version >= 22)
+You can choose, local setup or browser-based IDE: We recommend the local setup, but in case you struggle, just go with the browser-based one. It's a bit limited in functionality, but good enough.
+
+### Local (recommended)
+
+1. Make sure to have [NodeJS installed](https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation) (ideally version 22, but others should work as well. Just ignore the "Unsupported engine" warning.)
 2. Install [Visual Studio Code](https://code.visualstudio.com/download)
-3. Fork (ideally on GitHub), clone and open this repo in VS Code
+3. Fork this repo on GitHub (needed for step 5), then clone and open in VS Code
 4. Accept prompt to install recommended VS Code extensions, most importantly [Vue - Official Language Support](https://marketplace.visualstudio.com/items?itemName=vue.volar)
 5. Install dependencies
 
@@ -29,7 +33,14 @@ This is a little app used for a frontend development workshop.
    npm run dev
    ```
 
-7. Open in browser: http://localhost:3000/
+7. Open in your browser: http://localhost:3000/ - you should see the app homepage
+
+### Browser-based IDE via StackBlitz, no local setup required
+
+1. Click the following link: [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/~/github.com/jschroeter/knime-fe-workshop)
+2. Accept prompts to install recommended VS Code extensions, most importantly [Vue - Official Language Support](https://marketplace.visualstudio.com/items?itemName=vue.volar)
+3. After some time you should see the app homepage on the right side. You can ignore the "Unsupported engine" warnings in the terminal.
+4. As soon as you want to commit your changes you'll get asked to login via GitHub to fork the repo
 
 ## Step 1: Components & Pages 🧱
 

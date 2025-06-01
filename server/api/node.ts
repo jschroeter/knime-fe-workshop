@@ -9,7 +9,8 @@ import type { FetchError } from "ofetch";
 export const fetchNode = async (factoryName: string) => {
   try {
     const node = await $fetch<BasicNodeMetaInfo>(
-      "https://api.hubdev.knime.com/nodes/" + factoryName,
+      "https://corsproxy.io/?url=https://api.hub.knime.com/nodes/" +
+        factoryName, // corsproxy just to avoid CORS issues on StackBlitz
       {
         query: {
           details: "basic",
