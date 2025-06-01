@@ -54,7 +54,7 @@ If not, checkout branch `step1`.
 
 ## Step 2: Data Fetching & State Management 🗄️
 
-- in [pages/index.vue](./pages/index.vue), replace mock with the global node from [stores/game.ts](./stores/game.ts)
+- in [pages/game.vue](./pages/game.vue), replace mock with the global node from [stores/game.ts](./stores/game.ts)
 
   - call `fetchRandomNode()` action from game store
   - if you like, wrap it with [useAsyncData](https://nuxt.com/docs/api/composables/use-async-data)
