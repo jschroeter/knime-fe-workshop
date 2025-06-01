@@ -10,4 +10,6 @@ const mockedNode: Node = {
 };
 </script>
 
-<template>TODO use NodeContainer component</template>
+<template>
+  <NodeContainer :node="mockedNode" />
+</template>
