@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const mockedNode = {
+import type { Node } from "~/shared/types";
+
+const mockedNode: Node = {
   id: "*IBA30RAnRifRiKCv",
   title: "Scatter Plot",
   nodeType: "Visualizer",
