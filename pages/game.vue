@@ -1,15 +1,10 @@
 <script setup lang="ts">
-import type { Node } from "~/shared/types";
+const gameStore = useGameStore();
+const node = computed(() => gameStore.node);
 
-const mockedNode: Node = {
-  id: "*IBA30RAnRifRiKCv",
-  title: "Scatter Plot",
-  nodeType: "Visualizer",
-  preview: "https://hub.knime.com/site/png-icon/Node/*IBA30RAnRifRiKCv",
-  url: "https://hub.knime.com/n/IBA30RAnRifRiKCv",
-};
+await useAsyncData(() => gameStore.fetchRandomNode());
 </script>
 
 <template>
-  <NodeContainer :node="mockedNode" />
+  <NodeContainer v-if="node" :node="node" />
 </template>

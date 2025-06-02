@@ -23,7 +23,11 @@ export const fetchNode = async (factoryName: string) => {
       },
     );
 
-    // TODO skip deprecated and legacy nodes
+    // skip deprecated and legacy nodes
+    if (node.deprecated || node.title.includes("(legacy)")) {
+      console.log("Skipping deprecated or legacy node:", factoryName);
+      return null; // null as cacheable value
+    }
 
     // just pick the few props we need & add preview image and Hub URL
     const nodeWithPreview: Node = {
