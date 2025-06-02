@@ -71,7 +71,7 @@ watch(isSolved, (newIsSolved) => {
     const solvedLetters = numberOfSolvedLetters.value;
     const solvedAtLeastOneLetter = solvedLetters > 0;
     if (solvedAtLeastOneLetter) {
-      // TODO add a nice visual effect to celebrate the win
+      useParty().sparkles(solvedLetters);
     }
     gameStore.addToPlayed(gameStore.node!, solvedAtLeastOneLetter);
   }
@@ -92,7 +92,9 @@ watch(isSolved, (newIsSolved) => {
   </div>
 
   <menu>
-    <span class="points">Level {{ gameStore.level }}</span>
+    <span class="points"
+      >Points: {{ gameStore.points }} - Level {{ gameStore.level }}</span
+    >
     <Button
       v-if="!isSolved"
       compact

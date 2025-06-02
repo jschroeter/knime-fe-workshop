@@ -10,7 +10,7 @@ export const useGameStore = defineStore("game", () => {
 
   const node = ref<Node>();
   const playedNodes = ref<PlayedNode[]>([]);
-  // TODO add points ref & action
+  const points = ref(0);
 
   /* computed state */
 
@@ -37,9 +37,15 @@ export const useGameStore = defineStore("game", () => {
     playedNodes.value.push({ ...node, solved });
   };
 
+  const addPoint = () => {
+    points.value++;
+  };
+
   return {
     node,
     playedNodes,
+    /** sum of correctly guessed letters */
+    points,
     /** sum of nodes with at least one correctly guessed letter */
     score,
     /** level 1 means first 10% of top nodes, level 10 means 100% */
@@ -47,5 +53,6 @@ export const useGameStore = defineStore("game", () => {
 
     fetchRandomNode,
     addToPlayed,
+    addPoint,
   };
 });

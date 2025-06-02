@@ -69,7 +69,7 @@ export const useReveal = ({
         index: actualLetterObject.index,
         newState: stateMap.solved,
       });
-      // TODO add points to the game store
+      useGameStore().addPoint();
     }
   };
 
