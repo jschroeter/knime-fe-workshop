@@ -30,6 +30,7 @@ export const useGameStore = defineStore("game", () => {
         level: level.value,
       },
     });
+    return true; // just that useAsyncData doesn't complain
   };
 
   const addToPlayed = (node: Node, solved: boolean) => {
