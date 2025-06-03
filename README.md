@@ -68,10 +68,10 @@ If not, checkout branch `step1`.
 You now should see random nodes and be able to proceed to the next node.
 If not, checkout branch `step2`.
 
-## Step 3: Composables and Sparkels 🎇
+## Step 3: Composables and Sparkles 🎇
 
 - Let's make the user happy if at least one letter was guessed correctly
-  - in [components/NodeName.vue](./components/NodeName.vue) `watch(isSolved…`, call `useParty().sparkels()` ([composables/useParty.ts](./composables/useParty.ts))
+  - in [components/NodeName.vue](./components/NodeName.vue) `watch(isSolved…`, call `useParty().sparkles()` ([composables/useParty.ts](./composables/useParty.ts))
   - if you like, use `numberOfSolvedLetters` as factor argument
 - Implement feature: for each correctly guessed letter, the user should get 1 point
   - add state and action to [stores/game.ts](./stores/game.ts) and expose them
